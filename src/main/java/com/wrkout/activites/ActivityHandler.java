@@ -1,9 +1,9 @@
 package com.wrkout.activites;
 
-import com.wrkout.storage.CsvHandler;
-import com.wrkout.storage.StorageHandler;
 import com.wrkout.activites.continual.Running;
 import com.wrkout.activites.repetitive.*;
+import com.wrkout.storage.CsvHandler;
+import com.wrkout.storage.StorageHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,8 +12,8 @@ import java.util.Map;
 
 public class ActivityHandler {
 
-    private ArrayList<BaseActivity> activityList;
-    private StorageHandler storageHandler;
+    private final ArrayList<BaseActivity> activityList;
+    private final StorageHandler storageHandler;
 
     public ActivityHandler(StorageHandler storageHandler) {
         this.storageHandler = storageHandler;
@@ -38,7 +38,11 @@ public class ActivityHandler {
      * @return activity at the specified position.
      */
     public BaseActivity get(int index) {
-        return activityList.get(index);
+        try {
+            return activityList.get(index);
+        } catch (IndexOutOfBoundsException e) {
+            return null;
+        }
     }
 
     public void print() {
@@ -61,8 +65,7 @@ public class ActivityHandler {
         str.append("|");
 
         // Construct the rest of the header
-        for (int i=0; i < activityList.size(); i++) {
-            BaseActivity inst = activityList.get(i);
+        for (BaseActivity inst : activityList) {
             Map<String, String> row = inst.getMap();
             for (Map.Entry<String, String> entry : row.entrySet()) {
                 String key = entry.getKey();
@@ -80,7 +83,7 @@ public class ActivityHandler {
                     } else {
                         str.append(" |");
                     }
-                    fmt = " %-" + maxLengths[currentKeyNum-1] + "s";
+                    fmt = " %-" + maxLengths[currentKeyNum - 1] + "s";
                     fm.format(fmt, inst.getLabel(key));
                 }
             }
@@ -95,9 +98,9 @@ public class ActivityHandler {
         hr.append("+\n");
 
         // print the header
-        System.out.printf(hr.toString());
-        System.out.printf(str.toString());
-        System.out.printf(hr.toString());
+        System.out.print(hr.toString());
+        System.out.print(str.toString());
+        System.out.print(hr.toString());
 
         // put all values in the correct bucket
         table = new String[activityList.size()][currentKeyNum];
@@ -112,7 +115,6 @@ public class ActivityHandler {
 
         // print the rows
         for (String[] strings : table) {
-            first = true;
             for (int j = 0; j < strings.length; j++) {
                 fmt = "| %-" + (maxLengths[j] + 1) + "s";
                 if (strings[j] == null) {
@@ -121,11 +123,11 @@ public class ActivityHandler {
                     System.out.printf(fmt, strings[j]);
                 }
             }
-            System.out.printf("|\n");
+            System.out.print("|\n");
         }
 
         // finish of with a ruler
-        System.out.printf(hr.toString());
+        System.out.print(hr.toString());
 
     }
 
@@ -183,7 +185,4 @@ public class ActivityHandler {
         }
     }
 
-    public BaseActivity getSuggestion() {
-        return null;
-    }
 }
