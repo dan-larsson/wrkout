@@ -18,4 +18,7 @@ public interface StorageHandler {
      */
     public void read(ArrayList<BaseActivity> activityList);
 
+    public void addActivity(BaseActivity activity, int user_id);
+
+    public String[][] getRows(int user_id);
 }

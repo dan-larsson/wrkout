@@ -4,11 +4,7 @@ import com.wrkout.activites.ActivityHandler;
 import com.wrkout.activites.BaseActivity;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CsvHandler implements StorageHandler {
@@ -20,12 +16,77 @@ public class CsvHandler implements StorageHandler {
      */
     public static final int maxKeys = 32;
 
+    private List<String> columnNames = new ArrayList<>();
+
     private static Boolean contains(String[] arr, String key) {
         return Arrays.asList(arr).contains(key);
     }
 
     private static int indexOf(String[] arr, String key) {
         return Arrays.asList(arr).indexOf(key);
+    }
+
+    public void addActivity(BaseActivity activity, int user_id) {
+
+    }
+
+    public String[] getColumnNames() {
+        if (columnNames.size() == 0) {
+            String[] data;
+
+            try {
+                BufferedReader csvReader = new BufferedReader(new FileReader(fileName));
+
+                String row = csvReader.readLine();
+                if (row != null) {
+                    data = row.split(delimiter);
+                    for (String name : data) {
+                        columnNames.add(name);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return columnNames.toArray(String[]::new);
+    }
+
+
+    public String[][] getRows(int user_id) {
+        String[] keys = getColumnNames();
+        List<String[]> activityList = new ArrayList<>();
+        String[] data;
+        String row;
+        boolean isFirst = true;
+
+        try {
+            BufferedReader csvReader = new BufferedReader(new FileReader(fileName));
+            String className;
+            int nameIndex = indexOf(keys, "name");
+            BaseActivity instance;
+
+            while ((row = csvReader.readLine()) != null) {
+                if (isFirst) {
+                    // skip first row
+                    isFirst = false;
+                    continue;
+                }
+                data = row.split(delimiter);
+                className = data[nameIndex];
+                instance = ActivityHandler.newActivity(className);
+                if (instance != null) {
+                    for (int i = 0; i < data.length; i++) {
+                        instance.set(keys[i], data[i]);
+                    }
+                    activityList.add(instance.getArray(keys));
+                }
+            }
+            csvReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return activityList.toArray(String[][]::new);
     }
 
     public void read(ArrayList<BaseActivity> activityList) {

@@ -3,9 +3,11 @@ package com.wrkout.activites.repetitive;
 import com.wrkout.activites.BaseActivity;
 
 import java.io.BufferedReader;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 
 public class RepetitiveActivity extends BaseActivity implements Comparable {
@@ -37,19 +39,42 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
     }
 
     @Override
-    public void set(String key, String value) {
+    public String[] getKeys() {
+        String[] keys = {"sets", "reps", "weight"};
+        return Stream.concat(
+                Arrays.stream(super.getKeys()),
+                Arrays.stream(keys)
+        ).toArray(String[]::new);
+    }
+
+    @Override
+    public boolean set(String key, String value) {
         switch (key) {
             case "sets":
                 this.sets = Integer.parseInt(value);
-                break;
+                return true;
             case "reps":
                 this.reps = Integer.parseInt(value);
-                break;
+                return true;
             case "weight":
                 this.weight = Integer.parseInt(value);
-                break;
+                return true;
             default:
-                super.set(key, value);
+                return super.set(key, value);
+        }
+    }
+
+    @Override
+    public String get(String key) {
+        switch (key) {
+            case "sets":
+                return String.valueOf(sets);
+            case "reps":
+                return String.valueOf(reps);
+            case "weight":
+                return String.valueOf(weight);
+            default:
+                return super.get(key);
         }
     }
 

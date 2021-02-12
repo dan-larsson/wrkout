@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Stream;
 
 public abstract class BaseActivity implements Comparable {
 
@@ -34,7 +35,34 @@ public abstract class BaseActivity implements Comparable {
         return dict;
     }
 
-   public void set(String key, String value) {
+    public String[] getArray(String[] keys) {
+        String[] obj = new String[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            obj[i] = this.get(keys[i]);
+        }
+        return obj;
+    }
+
+    public String get(String key) {
+        switch (key) {
+            case "date":
+                return dateFormat.format(date);
+            case "name":
+                return name;
+            default:
+                return null;
+        }
+    }
+
+    public static String getDefaultValue(String key) {
+        switch (key) {
+            case "date":
+                return dateFormat.format(new Date());
+            default:
+                return null;
+        }
+    }
+    public boolean set(String key, String value) {
         switch (key) {
             case "date":
                 try {
@@ -42,10 +70,12 @@ public abstract class BaseActivity implements Comparable {
                 } catch (ParseException e) {
                     this.date = new Date();
                 }
-                break;
+                return true;
             case "name":
                 this.name = value;
-                break;
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -56,6 +86,16 @@ public abstract class BaseActivity implements Comparable {
             default: return null;
         }
     }
+
+    public String[] getKeys() {
+        String[] keys = {"date", "name"};
+        return keys;
+    }
+
+    public String[] getVals() {
+        return getArray(getKeys());
+    }
+
 
     @Override
     public String toString() {

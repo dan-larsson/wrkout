@@ -30,6 +30,19 @@ class StorageMock implements StorageHandler {
         // Add Deadlift 10 days ago
         activityList.add(new Deadlift(1, 2, 3, new Date(now.getTime() - (10 * 24 * 60 * 60 * 1000))));
     }
+
+    public String[] getColumnNames() {
+        return null;
+    }
+
+    @Override
+    public void addActivity(BaseActivity activity, int user_id) {
+
+    }
+
+    public String[][] getRows(int user_id) {
+        return null;
+    }
 }
 
 

@@ -3,12 +3,10 @@ package com.wrkout.activites;
 import com.wrkout.activites.continual.Running;
 import com.wrkout.activites.repetitive.*;
 import com.wrkout.storage.CsvHandler;
+import com.wrkout.storage.SQLiteHandler;
 import com.wrkout.storage.StorageHandler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Formatter;
-import java.util.Map;
+import java.util.*;
 
 public class ActivityHandler {
 
@@ -21,7 +19,7 @@ public class ActivityHandler {
     }
 
     public ActivityHandler() {
-        this(new CsvHandler());
+        this(new SQLiteHandler());
     }
 
     /**
@@ -145,6 +143,22 @@ public class ActivityHandler {
         storageHandler.write(activityList);
     }
 
+    public void addActivity(BaseActivity activity, int user_id) {
+        storageHandler.addActivity(activity, user_id);
+    }
+
+    public String[] getColumnNames() {
+        return getUniqueLabels();
+    }
+
+    public String[] getColumnKeys() {
+        return getUniqueKeys();
+    }
+
+    public String[][] getRows(int user_id) {
+        return storageHandler.getRows(user_id);
+    }
+
     /**
      * Return an array of activity names.
      * @return array of activity names.
@@ -163,6 +177,45 @@ public class ActivityHandler {
 
         return all;
     }
+
+    public static String[] getUniqueKeys() {
+        String[] all = oneOfEach();
+        String[] keys;
+        List<String> uniqueKeys = new ArrayList<>();
+        BaseActivity current;
+
+        for (String objName : all) {
+            current = newActivity(objName);
+            keys = current.getKeys();
+            for (String key : keys) {
+                if (uniqueKeys.contains(key)) continue;
+                uniqueKeys.add(key);
+            }
+        }
+
+        return uniqueKeys.toArray(new String[0]);
+    }
+
+    public static String[] getUniqueLabels() {
+        String[] all = oneOfEach();
+        String[] keys;
+        List<String> uniqueLabels = new ArrayList<>();
+        List<String> uniqueKeys = new ArrayList<>();
+        BaseActivity current;
+
+        for (String objName : all) {
+            current = newActivity(objName);
+            keys = current.getKeys();
+            for (String key : keys) {
+                if (uniqueKeys.contains(key)) continue;
+                uniqueKeys.add(key);
+                uniqueLabels.add(current.getLabel(key));
+            }
+        }
+
+        return uniqueLabels.toArray(new String[0]);
+    }
+
 
     /**
      * Return a new activity instance given its name.

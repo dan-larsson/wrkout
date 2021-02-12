@@ -3,9 +3,11 @@ package com.wrkout.activites.continual;
 import com.wrkout.activites.BaseActivity;
 
 import java.io.BufferedReader;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class ContinualActivity extends BaseActivity implements Comparable {
     // Length in km
@@ -42,16 +44,28 @@ public class ContinualActivity extends BaseActivity implements Comparable {
     }
 
     @Override
-    public void set(String key, String value) {
+    public boolean set(String key, String value) {
         switch (key) {
             case "length":
                 this.length = Integer.parseInt(value);
-                break;
+                return true;
             case "time":
                 this.time = Integer.parseInt(value);
-                break;
+                return true;
             default:
-                super.set(key, value);
+                return super.set(key, value);
+        }
+    }
+
+    @Override
+    public String get(String key) {
+        switch (key) {
+            case "length":
+                return String.valueOf(length);
+            case "time":
+                return String.valueOf(time);
+            default:
+                return super.get(key);
         }
     }
 
@@ -74,6 +88,15 @@ public class ContinualActivity extends BaseActivity implements Comparable {
         sb.append(", time=").append(time);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public String[] getKeys() {
+        String[] keys = {"length", "time"};
+        return Stream.concat(
+                Arrays.stream(super.getKeys()),
+                Arrays.stream(keys)
+        ).toArray(String[]::new);
     }
 
     @Override
