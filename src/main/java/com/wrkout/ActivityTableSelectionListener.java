@@ -20,20 +20,21 @@ public class ActivityTableSelectionListener implements ListSelectionListener {
     @Override
     public void valueChanged(ListSelectionEvent e) {
         ListSelectionModel lsm = (ListSelectionModel)e.getSource();
-        int selectedIndex = lsm.getSelectedIndices()[0];
-        Vector selectedRow = ((DefaultTableModel)table.getModel()).getDataVector().elementAt(table.convertRowIndexToModel(selectedIndex));
-        for (int index = 0; index < selectedRow.size(); index++) {
-            try {
-                String value = (String) selectedRow.get(index);
-                System.out.println(fields[index]);
-                if (fields[index] instanceof JTextField) {
-                    ((JTextField) fields[index]).setText(value);
-                } else if (fields[index] instanceof JComboBox) {
-                    ((JComboBox) fields[index]).setSelectedItem(value);
+        int[] selectedIndices = lsm.getSelectedIndices();
+        if (selectedIndices.length > 0) {
+            int selectedIndex = selectedIndices[0];
+            Vector selectedRow = ((DefaultTableModel) table.getModel()).getDataVector().elementAt(table.convertRowIndexToModel(selectedIndex));
+            for (int index = 0; index < selectedRow.size(); index++) {
+                try {
+                    String value = (String) selectedRow.get(index);
+                    if (fields[index] instanceof JTextField) {
+                        ((JTextField) fields[index]).setText(value);
+                    } else if (fields[index] instanceof JComboBox) {
+                        ((JComboBox) fields[index]).setSelectedItem(value);
+                    }
+                } catch (Exception exc) {
+                    System.out.println(exc);
                 }
-            } catch (Exception exc) {
-                System.out.println("Doh");
-                System.out.println(exc);
             }
         }
     }

@@ -19,13 +19,12 @@ public class App {
     private JLabel[] labels;
     private JComponent[] fields;
     private ActivityTable table;
+    private GridBagConstraints layoutConstraints;
 
     private int userId;
 
     public App() {
         mainPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.BOTH;
         userId = 1;
 
         activityHandler = new ActivityHandler();
@@ -33,20 +32,22 @@ public class App {
         keyNames = ActivityHandler.getUniqueKeys();
         columnNames = ActivityHandler.getUniqueLabels();
 
-        c.gridheight = (keyNames.length*2) + 1;
+        labels = new JLabel[keyNames.length];
+        fields = new JComponent[keyNames.length];
 
         data = activityHandler.getRows(userId);
         table = new ActivityTable(data, columnNames, fields);
-        //Create the scroll pane and add the table to it.
-        JScrollPane scrollPane = new JScrollPane(table);
 
-        c.gridx = 0;
-        c.gridy = 0;
-        c.weightx = 0.6;
-        c.insets = new Insets(10,10,10,0);
+        layoutConstraints = new GridBagConstraints();
+        layoutConstraints.fill = GridBagConstraints.BOTH;
+        layoutConstraints.gridheight = (keyNames.length*2) + 1;
+        layoutConstraints.gridx = 0;
+        layoutConstraints.gridy = 0;
+        layoutConstraints.weightx = 0.6;
+        layoutConstraints.insets = new Insets(10,10,10,0);
 
-        //Add the scroll pane to this panel.
-        mainPanel.add(scrollPane, c);
+        mainPanel.add(new JScrollPane(table), layoutConstraints);
+        mainPanel.setOpaque(true);
 
     }
 
@@ -58,51 +59,47 @@ public class App {
         });
     }
 
+    private int addFieldGroup(int index, int row) {
+        fields[index] = newField(keyNames[index]);
+        labels[index] = newLabelFor(fields[index], columnNames[index]);
+
+        layoutConstraints.insets = new Insets(5,15,0,10);
+        layoutConstraints.gridy = row;
+
+        mainPanel.add(labels[index], layoutConstraints);
+
+        row += 1;
+
+        layoutConstraints.insets = new Insets(0,10,0,10);
+        layoutConstraints.gridy = row;
+
+        mainPanel.add(fields[index], layoutConstraints);
+
+        row += 1;
+
+        return row;
+    }
+
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("App");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        App newContentPane = new App();
-        newContentPane.mainPanel.setOpaque(true); //content panes must be opaque
-        frame.setContentPane(newContentPane.mainPanel);
+        App ui = new App();
+        frame.setContentPane(ui.mainPanel);
 
-        newContentPane.labels = new JLabel[newContentPane.keyNames.length];
-        newContentPane.fields = new JComponent[newContentPane.keyNames.length];
-
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 0.4;
-        c.gridx = 1;
+        ui.layoutConstraints.fill = GridBagConstraints.HORIZONTAL;
+        ui.layoutConstraints.weightx = 0.4;
+        ui.layoutConstraints.gridx = 1;
+        ui.layoutConstraints.gridheight = 1;
+        ui.layoutConstraints.ipady = 10;
+        ui.layoutConstraints.ipadx = 10;
 
         int fieldRow = 0;
-        for (int i = 0; i < newContentPane.keyNames.length; i++) {
-
-            newContentPane.labels[i] = new JLabel(newContentPane.columnNames[i]);
-            newContentPane.labels[i].setFont(new Font("Arial", Font.PLAIN, 12));
-            newContentPane.labels[i].setSize(100, 30);
-            newContentPane.labels[i].setLabelFor(newContentPane.fields[i]);
-
-            c.insets = new Insets(5,15,0,10);  //top padding
-            c.gridy = fieldRow;
-            c.ipadx = 10;
-            newContentPane.mainPanel.add(newContentPane.labels[i], c);
-
-            fieldRow += 1;
-
-            newContentPane.fields[i] = newField(newContentPane.keyNames[i]);
-
-            c.insets = new Insets(0,10,0,10);  //top padding
-            c.gridy = fieldRow;
-            c.ipady = 10;
-            c.ipadx = 10;
-
-            newContentPane.mainPanel.add(newContentPane.fields[i], c);
-
-            fieldRow += 1;
-
+        for (int i = 0; i < ui.keyNames.length; i++) {
+            fieldRow = ui.addFieldGroup(i, fieldRow);
         }
 
-        newContentPane.table.setFields(newContentPane.fields);
+        ui.table.setFields(ui.fields);
 
         JButton sub = new JButton("Spara");
         sub.setFont(new Font("Arial", Font.PLAIN, 15));
@@ -110,13 +107,13 @@ public class App {
         sub.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String[] keys = new String[newContentPane.fields.length];
-                String[] vals = new String[newContentPane.fields.length];
+                String[] keys = new String[ui.fields.length];
+                String[] vals = new String[ui.fields.length];
                 int index = 0;
                 BaseActivity instance = null;
                 String text = null;
 
-                for (JComponent obj : newContentPane.fields) {
+                for (JComponent obj : ui.fields) {
                     String name = obj.getName();
                     switch (name) {
                         case "name":
@@ -142,21 +139,29 @@ public class App {
                             instance.set(keys[i], vals[i]);
                         }
                     }
-                    newContentPane.activityHandler.addActivity(instance, newContentPane.userId);
-                    newContentPane.table.addRow(instance.getArray(keys));
+                    ui.activityHandler.addActivity(instance, ui.userId);
+                    ui.table.addRow(instance.getArray(keys));
                 }
             }
         });
 
-        c.insets = new Insets(25,10,10,10);  //top padding
-        c.gridy = fieldRow;
-        c.ipady = 20;
+        ui.layoutConstraints.insets = new Insets(25,10,10,10);
+        ui.layoutConstraints.gridy = fieldRow;
+        ui.layoutConstraints.ipady = 20;
 
-        //sub.addActionListener(this);
-        newContentPane.mainPanel.add(sub, c);
+        ui.mainPanel.add(sub, ui.layoutConstraints);
 
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private static JLabel newLabelFor(JComponent field, String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Arial", Font.PLAIN, 12));
+        lbl.setSize(100, 30);
+        lbl.setLabelFor(field);
+
+        return lbl;
     }
 
     private static JComponent newField(String fieldName) {
