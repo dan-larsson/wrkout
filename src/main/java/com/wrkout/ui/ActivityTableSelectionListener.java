@@ -1,4 +1,4 @@
-package com.wrkout;
+package com.wrkout.ui;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

@@ -11,6 +11,7 @@ public abstract class BaseActivity implements Comparable {
 
     protected Date date;
     protected String name;
+    protected int id;
 
     public static SimpleDateFormat dateFormat;
 
@@ -112,6 +113,10 @@ public abstract class BaseActivity implements Comparable {
 
     public Date getDate() {
         return date;
+    }
+
+    public int getId() {
+        return id;
     }
 
     /**

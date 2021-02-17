@@ -1,4 +1,4 @@
-package com.wrkout;
+package com.wrkout.ui;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -17,7 +17,7 @@ public class ActivityTable extends JTable {
 
         DefaultTableModel model = new DefaultTableModel(null, columnNames);
 
-        setPreferredScrollableViewportSize(new Dimension(500, 70));
+        setPreferredScrollableViewportSize(new Dimension(800, 600));
 
         setFillsViewportHeight(true);
         setRowHeight(30);
@@ -30,6 +30,8 @@ public class ActivityTable extends JTable {
         tableListener = new ActivityTableSelectionListener(this, fields);
         selectionModel.addListSelectionListener(tableListener);
 
+        this.addMouseListener(new PopupClickListener(this));
+
         for (Object[] row : data) model.addRow(row);
         setModel(model);
 
@@ -39,6 +41,10 @@ public class ActivityTable extends JTable {
         sortKeys.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
         sorter.setSortKeys(sortKeys);
         setRowSorter(sorter);
+    }
+
+    public void removeRow(int rowToRemove) {
+        ((DefaultTableModel)this.dataModel).removeRow(rowToRemove);
     }
 
     public void addRow(Object[] row) {

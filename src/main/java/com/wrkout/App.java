@@ -2,6 +2,7 @@ package com.wrkout;
 
 import com.wrkout.activites.ActivityHandler;
 import com.wrkout.activites.BaseActivity;
+import com.wrkout.ui.ActivityTable;
 
 import javax.swing.*;
 import java.awt.*;
