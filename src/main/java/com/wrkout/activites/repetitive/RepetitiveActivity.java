@@ -38,12 +38,17 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
         return weight;
     }
 
+
     @Override
     public String[] getKeys() {
-        String[] keys = {"sets", "reps", "weight"};
+        return getKeys(false);
+    }
+
+    @Override
+    public String[] getKeys(boolean includeHidden) {
         return Stream.concat(
-                Arrays.stream(super.getKeys()),
-                Arrays.stream(keys)
+                Arrays.stream(super.getKeys(includeHidden)),
+                Arrays.stream(new String[]{"sets", "reps", "weight"})
         ).toArray(String[]::new);
     }
 

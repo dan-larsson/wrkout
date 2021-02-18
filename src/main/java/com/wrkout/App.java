@@ -13,9 +13,7 @@ import java.text.SimpleDateFormat;
 public class App {
 
     private JPanel mainPanel;
-    private ActivityHandler activityHandler;
     private String[] columnNames;
-    private Object[][] data;
     private String[] keyNames;
     private JLabel[] labels;
     private JComponent[] fields;
@@ -28,16 +26,13 @@ public class App {
         mainPanel = new JPanel(new GridBagLayout());
         userId = 1;
 
-        activityHandler = new ActivityHandler();
-
         keyNames = ActivityHandler.getUniqueKeys();
         columnNames = ActivityHandler.getUniqueLabels();
 
         labels = new JLabel[keyNames.length];
         fields = new JComponent[keyNames.length];
 
-        data = activityHandler.getRows(userId);
-        table = new ActivityTable(data, columnNames, fields);
+        table = new ActivityTable(fields);
 
         layoutConstraints = new GridBagConstraints();
         layoutConstraints.fill = GridBagConstraints.BOTH;
@@ -140,8 +135,6 @@ public class App {
                             instance.set(keys[i], vals[i]);
                         }
                     }
-                    ui.activityHandler.addActivity(instance, ui.userId);
-                    ui.table.addRow(instance.getArray(keys));
                 }
             }
         });

@@ -1,5 +1,7 @@
 package com.wrkout.ui;
 
+import com.wrkout.activites.BaseActivity;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -12,10 +14,8 @@ public class ActivityTable extends JTable {
 
     private ActivityTableSelectionListener tableListener;
 
-    public ActivityTable(Object[][] data, Object[] columnNames, JComponent[] fields) {
-        super();
-
-        DefaultTableModel model = new DefaultTableModel(null, columnNames);
+    public ActivityTable(JComponent[] fields) {
+            super(new SQLiteTableModel());
 
         setPreferredScrollableViewportSize(new Dimension(800, 600));
 
@@ -30,25 +30,26 @@ public class ActivityTable extends JTable {
         tableListener = new ActivityTableSelectionListener(this, fields);
         selectionModel.addListSelectionListener(tableListener);
 
-        this.addMouseListener(new PopupClickListener(this));
-
-        for (Object[] row : data) model.addRow(row);
-        setModel(model);
-
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(getModel());
         List<RowSorter.SortKey> sortKeys = new ArrayList<>(25);
         sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
         sortKeys.add(new RowSorter.SortKey(1, SortOrder.ASCENDING));
         sorter.setSortKeys(sortKeys);
         setRowSorter(sorter);
+
+        this.addMouseListener(new PopupClickListener(this));
     }
 
-    public void removeRow(int rowToRemove) {
-        ((DefaultTableModel)this.dataModel).removeRow(rowToRemove);
+    public BaseActivity getActivity(int row) {
+        return ((SQLiteTableModel)this.dataModel).getActivity(row);
+    }
+
+    public void removeRow(int rowNum, int activityId) {
+        ((SQLiteTableModel)this.dataModel).removeRow(rowNum, activityId);
     }
 
     public void addRow(Object[] row) {
-        ((DefaultTableModel)this.dataModel).addRow(row);
+        //((SQLiteTableModel)this.dataModel).addRow(row);
     }
 
     public void addRows(Object[][] data) {

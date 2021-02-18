@@ -126,6 +126,21 @@ public class SQLiteHandler implements StorageHandler {
 
     }
 
+    public void deleteRow(int id) {
+        String sql = "DELETE FROM activities WHERE id = ?";
+        PreparedStatement stmt;
+        try {
+            connect();
+            stmt = c.prepareStatement(sql);
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getClass().getName() + ": " + e.getMessage());
+        } finally {
+            close();
+        }
+    }
+
     public void read(ArrayList<BaseActivity> activityList) {
         connect();
         try {
@@ -136,7 +151,7 @@ public class SQLiteHandler implements StorageHandler {
             for (String key : keys) {
                 sql.append(String.format("activities.%s, ", key));
             }
-            sql.append("activities.id, users.name FROM activities ");
+            sql.append("activities.id, users.name as username FROM activities ");
             sql.append("INNER JOIN users ON activities.user_id = users.id ");
             sql.append("ORDER BY activities.date;");
 
@@ -146,9 +161,12 @@ public class SQLiteHandler implements StorageHandler {
                 String name = res.getString("name");
                 instance = ActivityHandler.newActivity(name);
                 if (instance != null) {
-                    for (int i = 0; i < keys.length; i++) {
+                    int i;
+                    for (i = 0; i < keys.length; i++) {
                         instance.set(keys[i], res.getString(i+1));
                     }
+                    instance.set(keys[i], res.getString(i+1));      // id
+                    instance.set(keys[i+2], res.getString(i+3));    // username
                     activityList.add(instance);
                 }
             }

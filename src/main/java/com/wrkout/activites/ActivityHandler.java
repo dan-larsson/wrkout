@@ -179,6 +179,11 @@ public class ActivityHandler {
     }
 
     public static String[] getUniqueKeys() {
+        return getUniqueKeys(false);
+    }
+
+
+    public static String[] getUniqueKeys(boolean includeHidden) {
         String[] all = oneOfEach();
         String[] keys;
         List<String> uniqueKeys = new ArrayList<>();
@@ -186,7 +191,8 @@ public class ActivityHandler {
 
         for (String objName : all) {
             current = newActivity(objName);
-            keys = current.getKeys();
+            assert current != null;
+            keys = current.getKeys(includeHidden);
             for (String key : keys) {
                 if (uniqueKeys.contains(key)) continue;
                 uniqueKeys.add(key);

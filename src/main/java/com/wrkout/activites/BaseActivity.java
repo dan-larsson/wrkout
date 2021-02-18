@@ -12,6 +12,7 @@ public abstract class BaseActivity implements Comparable {
     protected Date date;
     protected String name;
     protected int id;
+    protected String username;
 
     public static SimpleDateFormat dateFormat;
 
@@ -50,6 +51,10 @@ public abstract class BaseActivity implements Comparable {
                 return dateFormat.format(date);
             case "name":
                 return name;
+            case "id":
+                return String.valueOf(id);
+            case "username":
+                return username;
             default:
                 return null;
         }
@@ -64,6 +69,7 @@ public abstract class BaseActivity implements Comparable {
         }
     }
     public boolean set(String key, String value) {
+        System.out.printf("Setting %s: %s\n", key, value);
         switch (key) {
             case "date":
                 try {
@@ -75,6 +81,10 @@ public abstract class BaseActivity implements Comparable {
             case "name":
                 this.name = value;
                 return true;
+            case "id":
+                this.id = Integer.parseInt(value);
+            case "username":
+                this.username = value;
             default:
                 return false;
         }
@@ -89,8 +99,15 @@ public abstract class BaseActivity implements Comparable {
     }
 
     public String[] getKeys() {
-        String[] keys = {"date", "name"};
-        return keys;
+        return getKeys(false);
+    }
+
+    public String[] getKeys(boolean includeHidden) {
+        if (includeHidden) {
+            return new String[]{"date", "name", "id", "username"};
+        } else {
+            return new String[]{"date", "name"};
+        }
     }
 
     public String[] getVals() {

@@ -92,10 +92,14 @@ public class ContinualActivity extends BaseActivity implements Comparable {
 
     @Override
     public String[] getKeys() {
-        String[] keys = {"length", "time"};
+        return getKeys(false);
+    }
+
+    @Override
+    public String[] getKeys(boolean includeHidden) {
         return Stream.concat(
-                Arrays.stream(super.getKeys()),
-                Arrays.stream(keys)
+                Arrays.stream(super.getKeys(includeHidden)),
+                Arrays.stream(new String[]{"length", "time"})
         ).toArray(String[]::new);
     }
 

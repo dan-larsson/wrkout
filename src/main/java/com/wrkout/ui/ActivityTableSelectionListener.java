@@ -1,10 +1,11 @@
 package com.wrkout.ui;
 
+import com.wrkout.activites.ActivityHandler;
+import com.wrkout.activites.BaseActivity;
+
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
-import java.util.Vector;
 
 public class ActivityTableSelectionListener implements ListSelectionListener {
 
@@ -23,10 +24,11 @@ public class ActivityTableSelectionListener implements ListSelectionListener {
         int[] selectedIndices = lsm.getSelectedIndices();
         if (selectedIndices.length > 0) {
             int selectedIndex = selectedIndices[0];
-            Vector selectedRow = ((DefaultTableModel) table.getModel()).getDataVector().elementAt(table.convertRowIndexToModel(selectedIndex));
-            for (int index = 0; index < selectedRow.size(); index++) {
+            BaseActivity selected = ((SQLiteTableModel) table.getModel()).getActivity(table.convertRowIndexToModel(selectedIndex));
+            String[] keys = ActivityHandler.getUniqueKeys();
+            for (int index = 0; index < keys.length; index++) {
                 try {
-                    String value = (String) selectedRow.get(index);
+                    String value = selected.get(keys[index]);
                     if (fields[index] instanceof JTextField) {
                         ((JTextField) fields[index]).setText(value);
                     } else if (fields[index] instanceof JComboBox) {
