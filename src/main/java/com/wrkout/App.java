@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 
+import static javax.swing.UIManager.getSystemLookAndFeelClassName;
+
 public class App {
 
     private JPanel mainPanel;
@@ -23,6 +25,21 @@ public class App {
     private int userId;
 
     public App() {
+        try {
+            UIManager.setLookAndFeel(getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+
+        MenuBar menuBar = new MenuBar();
+
+
         mainPanel = new JPanel(new GridBagLayout());
         userId = 1;
 
@@ -32,7 +49,7 @@ public class App {
         labels = new JLabel[keyNames.length];
         fields = new JComponent[keyNames.length];
 
-        table = new ActivityTable(fields);
+        table = new ActivityTable(fields, userId);
 
         layoutConstraints = new GridBagConstraints();
         layoutConstraints.fill = GridBagConstraints.BOTH;
@@ -48,6 +65,13 @@ public class App {
     }
 
     public static void main(String[] args) {
+        try {
+            System.setProperty( "com.apple.mrj.application.apple.menu.about.name", "Workout" );
+            System.setProperty( "com.apple.macos.useScreenMenuBar", "true" );
+            System.setProperty( "apple.laf.useScreenMenuBar", "true" ); // for older versions of Java
+        } catch (SecurityException e) {
+            /* probably running via webstart, do nothing */
+        }
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowGUI();
@@ -77,8 +101,11 @@ public class App {
     }
 
     private static void createAndShowGUI() {
-        JFrame frame = new JFrame("App");
+        JFrame frame = new JFrame("Workout");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        com.wrkout.ui.MenuBar menuBar = new com.wrkout.ui.MenuBar(frame);
+        frame.setJMenuBar(menuBar);
 
         App ui = new App();
         frame.setContentPane(ui.mainPanel);
@@ -135,6 +162,7 @@ public class App {
                             instance.set(keys[i], vals[i]);
                         }
                     }
+                    ui.table.addActivity(instance, ui.userId);
                 }
             }
         });

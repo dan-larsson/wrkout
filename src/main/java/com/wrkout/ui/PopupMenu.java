@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 public class PopupMenu extends JPopupMenu {
+    public final String FRMT_DELETE = "Ta bort rad %d";
     JMenuItem anItem;
     ActivityTable table;
     BaseActivity current;
@@ -18,7 +19,7 @@ public class PopupMenu extends JPopupMenu {
         this.row = row;
         this.current = current;
 
-        anItem = new JMenuItem(new AbstractAction("Ta bort rad " + row + " med id " + current.getId()) {
+        anItem = new JMenuItem(new AbstractAction(String.format(FRMT_DELETE, row)) {
             public void actionPerformed(ActionEvent e) {
                 table.removeRow(row, current.getId());
             }

@@ -13,7 +13,6 @@ public class SQLiteTableModel extends AbstractTableModel {
 
     private Connection connection;
     private Statement statement;
-    private int numberOfRows;
     private boolean connectedToDatabase = false;
     private final String[] columnNames;
     private final String[] columnKeys;
@@ -52,7 +51,7 @@ public class SQLiteTableModel extends AbstractTableModel {
     }
 
     public int getRowCount() {
-        return numberOfRows;
+        return activityList.size();
     }
 
     @Override
@@ -108,7 +107,6 @@ public class SQLiteTableModel extends AbstractTableModel {
                         }
                     }
                     activityList.add(instance);
-                    numberOfRows += 1;
                 }
             }
         } catch (Exception e) {
@@ -118,8 +116,69 @@ public class SQLiteTableModel extends AbstractTableModel {
         fireTableStructureChanged();
     }
 
-    public void removeRow(int rowNum, int activityId) {
-        System.out.printf("Removing #%s\n", activityId);
+    public void addActivity(BaseActivity activity, int user_id) throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        StringBuilder sql = new StringBuilder("INSERT INTO activities (user_id");
+        String[] keys = activity.getKeys();
+
+        for (String key : keys) {
+            sql.append(",");
+            sql.append(key);
+        }
+        sql.append(") VALUES (");
+        sql.append(user_id);
+
+        for (String key : keys) {
+            sql.append(String.format(",'%s'", activity.get(key)));
+        }
+        sql.append(");");
+
+        statement.executeUpdate(sql.toString());
+        activityList.add(activity);
+
+        fireTableStructureChanged();
+
+    }
+
+    public void addRow(Object[] row, int user_id) throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        StringBuilder sql = new StringBuilder("INSERT INTO activities (user_id");
+        String[] keys = ActivityHandler.getUniqueKeys();
+        boolean isFirst = true;
+
+        for (String key : keys) {
+            sql.append(",");
+            sql.append(key);
+        }
+        sql.append(") VALUES (");
+        sql.append(user_id);
+
+        for (Object key : row) {
+            sql.append(String.format(",'%s'", key));
+        }
+        sql.append(");");
+
+        System.out.println(sql.toString());
+
+        statement.executeUpdate(sql.toString());
+
+        fireTableStructureChanged();
+
+    }
+
+    public void removeRow(int rowNum, int activityId) throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        String sql = String.format("DELETE FROM activities WHERE id = %d", activityId);
+        statement.executeUpdate(sql);
+
+        activityList.remove(rowNum);
+        fireTableStructureChanged();
     }
 
     public void disconnectFromDatabase() {

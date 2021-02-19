@@ -12,10 +12,12 @@ import java.util.List;
 
 public class ActivityTable extends JTable {
 
+    private int userId;
     private ActivityTableSelectionListener tableListener;
 
-    public ActivityTable(JComponent[] fields) {
-            super(new SQLiteTableModel());
+    public ActivityTable(JComponent[] fields, int userId) {
+        super(new SQLiteTableModel());
+        this.userId = userId;
 
         setPreferredScrollableViewportSize(new Dimension(800, 600));
 
@@ -45,15 +47,27 @@ public class ActivityTable extends JTable {
     }
 
     public void removeRow(int rowNum, int activityId) {
-        ((SQLiteTableModel)this.dataModel).removeRow(rowNum, activityId);
+        try {
+            ((SQLiteTableModel) this.dataModel).removeRow(rowNum, activityId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void addRow(Object[] row) {
-        //((SQLiteTableModel)this.dataModel).addRow(row);
+        try {
+            ((SQLiteTableModel)this.dataModel).addRow(row, userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void addRows(Object[][] data) {
-        for (Object[] row : data) addRow(row);
+    public void addActivity(BaseActivity activity, int user_id) {
+        try {
+            ((SQLiteTableModel) this.dataModel).addActivity(activity, user_id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void setFields(JComponent[] fields) {
