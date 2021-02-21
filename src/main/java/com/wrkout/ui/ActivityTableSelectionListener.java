@@ -24,7 +24,7 @@ public class ActivityTableSelectionListener implements ListSelectionListener {
         int[] selectedIndices = lsm.getSelectedIndices();
         if (selectedIndices.length > 0) {
             int selectedIndex = selectedIndices[0];
-            BaseActivity selected = ((SQLiteTableModel) table.getModel()).getActivity(table.convertRowIndexToModel(selectedIndex));
+            BaseActivity selected = ((ActivityTableModel) table.getModel()).getActivity(table.convertRowIndexToModel(selectedIndex));
             String[] keys = ActivityHandler.getUniqueKeys();
             for (int index = 0; index < keys.length; index++) {
                 try {

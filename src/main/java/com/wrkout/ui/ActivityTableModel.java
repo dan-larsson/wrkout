@@ -2,12 +2,13 @@ package com.wrkout.ui;
 
 import com.wrkout.activites.ActivityHandler;
 import com.wrkout.activites.BaseActivity;
+import com.wrkout.user.User;
 
 import javax.swing.table.AbstractTableModel;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class SQLiteTableModel extends AbstractTableModel {
+public class ActivityTableModel extends AbstractTableModel {
 
     public static final String URL = "jdbc:sqlite:wrkout.db";
 
@@ -17,10 +18,13 @@ public class SQLiteTableModel extends AbstractTableModel {
     private final String[] columnNames;
     private final String[] columnKeys;
     private final String[] objectKeys;
-    private final ArrayList<BaseActivity> activityList;
+    private ArrayList<BaseActivity> activityList;
 
+    public ActivityTableModel() {
+        this(false);
+    }
 
-    public SQLiteTableModel() {
+    public ActivityTableModel(boolean setQuery) {
         columnNames = ActivityHandler.getUniqueLabels();
         columnKeys = ActivityHandler.getUniqueKeys();
         objectKeys = ActivityHandler.getUniqueKeys(true);
@@ -31,23 +35,45 @@ public class SQLiteTableModel extends AbstractTableModel {
             connection = DriverManager.getConnection(URL);
             statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             connectedToDatabase = true;
-            setQuery();
+            if (setQuery) {
+                this.setQuery();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(0);
         }
     }
 
-    public Class getColumnClass(int column) throws IllegalStateException {
+    public void createTables() throws IllegalStateException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        try {
+            statement.executeUpdate(ActivityHandler.getCreateSQL());
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
+    }
+
+    public Class getColumnClass(int column) {
+        if (column == 0) {
+            return Integer.class;
+        }
         return String.class;
     }
 
     public int getColumnCount() {
-        return columnNames.length;
+        return columnNames.length + 2;
     }
 
     public String getColumnName(int column) {
-        return columnNames[column];
+        if (column == 0) {
+            return "";
+        } else if (column == columnNames.length + 1) {
+            return "kcal";
+        }
+        return columnNames[column - 1];
     }
 
     public int getRowCount() {
@@ -56,7 +82,12 @@ public class SQLiteTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int row, int column) {
-        return activityList.get(row).get(columnKeys[column]);
+        if (column == 0) {
+            return row + 1;
+        } else if (column == columnNames.length + 1) {
+            return activityList.get(row).getKCAL();
+        }
+        return activityList.get(row).get(columnKeys[column - 1]);
     }
 
     public BaseActivity getActivity(int row) {
@@ -68,6 +99,8 @@ public class SQLiteTableModel extends AbstractTableModel {
             throw new IllegalStateException("Not Connected to Database");
 
         try {
+            activityList = new ArrayList<>();
+
             BaseActivity instance;
             boolean first = true;
             StringBuilder sql = new StringBuilder("SELECT ");
@@ -75,9 +108,12 @@ public class SQLiteTableModel extends AbstractTableModel {
             for (String key : objectKeys) {
                 if (key.equals("username")) {
                     frmt = "users.name as username";
+                } else if (key.equals("userweight")) {
+                    frmt = "users.weight as userweight";
                 } else {
                     frmt = "activities.%s";
                 }
+
                 if (first) {
                     sql.append(String.format(frmt, key));
                     first = false;

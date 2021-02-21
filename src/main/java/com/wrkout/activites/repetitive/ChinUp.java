@@ -6,12 +6,12 @@ public class ChinUp extends RepetitiveActivity {
 
     public static final String NAME = "Chins";
 
-    public ChinUp(int reps, int sets, int weight, Date date) {
-        super(ChinUp.NAME, date, reps, sets, weight);
+    public ChinUp(int reps, int sets, int weight, Date date, int time) {
+        super(ChinUp.NAME, date, reps, sets, weight, time);
     }
 
-    public ChinUp(int reps, int sets, int weight) {
-        super(ChinUp.NAME, new Date(), reps, sets, weight);
+    public ChinUp(int reps, int sets, int weight, int time) {
+        super(ChinUp.NAME, new Date(), reps, sets, weight, time);
     }
 
     public ChinUp() {

@@ -222,6 +222,17 @@ public class ActivityHandler {
         return uniqueLabels.toArray(new String[0]);
     }
 
+    public static String getCreateSQL() {
+        StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS activities (");
+        for (String key : getUniqueKeys()) {
+            sql.append(String.format("%s CHAR(32), ", key));
+        }
+        sql.append("user_id INTEGER NOT NULL, ");
+        sql.append("id INTEGER PRIMARY KEY AUTOINCREMENT, ");
+        sql.append("FOREIGN KEY (user_id) REFERENCES users(id));");
+
+        return sql.toString();
+    }
 
     /**
      * Return a new activity instance given its name.

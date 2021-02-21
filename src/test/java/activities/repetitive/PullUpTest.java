@@ -23,12 +23,13 @@ public class PullUpTest {
     private final int sets = 1;
     private final int reps = 2;
     private final int weight = 3;
+    private final int time = 4;
     private final Date today = new Date();
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     @BeforeEach
     void setUp() {
-        activity = new PullUp(reps, sets, weight, today);
+        activity = new PullUp(reps, sets, weight, today, time);
     }
 
     @Test
@@ -38,6 +39,7 @@ public class PullUpTest {
         assertEquals("1", data.get("sets"), "Should return 1 set");
         assertEquals("2", data.get("reps"), "Should return 2 reps");
         assertEquals("3", data.get("weight"), "Should return 3 in weight");
+        assertEquals("4", data.get("time"), "Should return 4 in time");
     }
 
     @Test
@@ -46,6 +48,7 @@ public class PullUpTest {
         assertEquals(sets, activity.getSets(), "Should return sets set in construct");
         assertEquals(reps, activity.getReps(), "Should return reps set in construct");
         assertEquals(weight, activity.getWeight(), "Should return weight set in construct");
+        assertEquals(time, activity.getTime(), "Should return time set in construct");
 
         activity.set("sets", "10");
         assertEquals(10, activity.getSets(), "Should return updated number of sets");
@@ -55,6 +58,9 @@ public class PullUpTest {
 
         activity.set("weight", "30");
         assertEquals(30, activity.getWeight(), "Should return updated weight");
+
+        activity.set("time", "30");
+        assertEquals(40, activity.getTime(), "Should return updated time");
     }
 
     @Test
@@ -65,44 +71,7 @@ public class PullUpTest {
         assertNotNull(activity.getLabel("sets"), "Sets should have a label");
         assertNotNull(activity.getLabel("reps"), "Reps should have a label");
         assertNotNull(activity.getLabel("weight"), "Weight should have a label");
+        assertNotNull(activity.getLabel("time"), "Time should have a label");
         assertNull(activity.getLabel("foo"), "foo should not have a label");
-    }
-
-    @Test
-    @DisplayName("Ensure default values if no are given")
-    void testPromptDefaults() {
-        HashMap<String, String> defaults = new HashMap<>();
-        defaults.put("date", "1977-06-08");
-        defaults.put("sets", "111");
-        defaults.put("reps", "222");
-        defaults.put("weight", "333");
-
-        BufferedReader bufferedReader = new BufferedReader(new StringReader("\n\n\n\n"));
-        activity.prompt(bufferedReader, defaults);
-
-        assertEquals("1977-06-08", dateFormat.format(activity.getDate()), "Should return default date");
-        assertEquals(111, activity.getSets(), "Should return default number of sets");
-        assertEquals(222, activity.getReps(), "Should return default number of reps");
-        assertEquals(333, activity.getWeight(), "Should return default weight");
-    }
-
-    @Test
-    @DisplayName("Ensure new values are set")
-    void testPromptNewValues() {
-        HashMap<String, String> defaults = new HashMap<>();
-        defaults.put("date", "1977-06-08");
-        defaults.put("sets", "111");
-        defaults.put("reps", "222");
-        defaults.put("weight", "333");
-
-        BufferedReader bufferedReader = new BufferedReader(new StringReader("2000-01-01\n444\n555\n666\n"));
-        activity.prompt(bufferedReader, defaults);
-
-        assertEquals("2000-01-01", dateFormat.format(activity.getDate()), "Should return new date");
-        assertEquals(666, activity.getReps(), "Should return updated number of reps");
-        assertEquals(555, activity.getSets(), "Should return updated number of sets");
-        assertEquals(444, activity.getWeight(), "Should return updated weight");
-        assertEquals("2000-01-01", defaults.get("date"), "Default date should be updated");
-
     }
 }

@@ -5,14 +5,19 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Stream;
 
 public abstract class BaseActivity implements Comparable {
+
+    public static final double xxx = 6.5;
 
     protected Date date;
     protected String name;
     protected int id;
+    protected int time;
+    // User data
     protected String username;
+    protected int userweight;
+
 
     public static SimpleDateFormat dateFormat;
 
@@ -23,6 +28,12 @@ public abstract class BaseActivity implements Comparable {
         this.date = date;
         this.name = name;
     }
+
+    /**
+     * Number of kcal/h and per kg body weight.
+     * @return Power consumption
+     */
+    protected abstract double getPowerConsumption();
 
     /**
      * Return object as HashMap.
@@ -51,10 +62,14 @@ public abstract class BaseActivity implements Comparable {
                 return dateFormat.format(date);
             case "name":
                 return name;
+            case "time":
+                return String.valueOf(time);
             case "id":
                 return String.valueOf(id);
             case "username":
                 return username;
+            case "userweight":
+                return String.valueOf(userweight);
             default:
                 return null;
         }
@@ -83,8 +98,13 @@ public abstract class BaseActivity implements Comparable {
                 return true;
             case "id":
                 this.id = Integer.parseInt(value);
+                return true;
             case "username":
                 this.username = value;
+                return true;
+            case "userweight":
+                this.userweight = Integer.parseInt(value);
+                return true;
             default:
                 return false;
         }
@@ -104,9 +124,9 @@ public abstract class BaseActivity implements Comparable {
 
     public String[] getKeys(boolean includeHidden) {
         if (includeHidden) {
-            return new String[]{"date", "name", "id", "username"};
+            return new String[]{"date", "name", "id", "time", "username", "userweight"};
         } else {
-            return new String[]{"date", "name"};
+            return new String[]{"date", "name", "time"};
         }
     }
 
@@ -120,6 +140,7 @@ public abstract class BaseActivity implements Comparable {
         final StringBuilder sb = new StringBuilder("Activity{");
         sb.append("date=").append(date);
         sb.append(", name='").append(name).append('\'');
+        sb.append(", time=").append(time);
         sb.append('}');
         return sb.toString();
     }
@@ -136,65 +157,26 @@ public abstract class BaseActivity implements Comparable {
         return id;
     }
 
-    /**
-     * Prompt user for input values for this activity.
-     * @param input BufferedReader
-     */
-    public void prompt(BufferedReader input, HashMap<String, String> defaults) {
-        promptForActivityDate(input, defaults);
-    }
-
-    public static String getUserInput(BufferedReader input, String label, String defaultValue) {
-        if (defaultValue != null) {
-            System.out.printf("%s (%s): ", label, defaultValue);
-        } else {
-            System.out.printf("%s: ", label);
-        }
-
-        try {
-            String userInput = input.readLine();
-            if ("".equals(userInput.trim())) {
-                return defaultValue;
-            } else {
-                return userInput;
-            }
-        } catch (IOException e) {
-            return "";
-        }
-
-    }
-
-    public static int promptForInt(BufferedReader input, String label, String defaultValue) {
-        int tmp = 0;
-        while (tmp == 0) {
-            String userInput = getUserInput(input, label, defaultValue);
-            try {
-                tmp = Integer.parseInt(userInput);
-            } catch (NumberFormatException e) {
-                System.out.printf("Could not parse \"%s\", try again.\n", userInput);
-            }
-        }
-        return tmp;
-    }
-
-    public static Date promptForDate(BufferedReader input, String label, String defaultValue) {
-        Date tmp = null;
-        while (tmp == null) {
-            String userInput = getUserInput(input, label, defaultValue);
-            try {
-                tmp = dateFormat.parse(userInput);
-            } catch (ParseException e) {
-                System.out.printf("Could not parse \"%s\", try again.\n", userInput);
-            }
-        }
-        return tmp;
+    public int getTime() {
+        return time;
     }
 
     protected abstract Map<String, String> prepare();
 
-    private void promptForActivityDate(BufferedReader input, HashMap<String, String> defaults) {
-        this.date = promptForDate(input, getLabel("date")+"[yyyy-mm-dd]", defaults.get("date"));
-        defaults.put("date", dateFormat.format(this.date)); // suggest the same date
-    }
+   public double getKCAL() {
+        try {
+            double powerConsumption = getPowerConsumption();
+            double hours = getTime() / 60.0;
+            System.out.printf("powerConsumption = %f\n", powerConsumption);
+            System.out.printf("time = %d\n", getTime());
+            System.out.printf("hours = %f\n", hours);
+            System.out.printf("weight = %d\n", userweight);
+
+            return (powerConsumption * hours * userweight);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0.0;
+        }
+     }
 
 }

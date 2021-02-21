@@ -3,6 +3,8 @@ package com.wrkout;
 import com.wrkout.activites.ActivityHandler;
 import com.wrkout.activites.BaseActivity;
 import com.wrkout.ui.ActivityTable;
+import com.wrkout.ui.ActivityTableModel;
+import com.wrkout.ui.UserTableModel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +17,8 @@ import static javax.swing.UIManager.getSystemLookAndFeelClassName;
 public class App {
 
     private JPanel mainPanel;
+    private JPanel toolBarPanel;
+    private JPanel statusPanel;
     private String[] columnNames;
     private String[] keyNames;
     private JLabel[] labels;
@@ -37,10 +41,9 @@ public class App {
             e.printStackTrace();
         }
 
-        MenuBar menuBar = new MenuBar();
-
-
-        mainPanel = new JPanel(new GridBagLayout());
+        mainPanel = new JPanel(new BorderLayout());
+        toolBarPanel = new JPanel(new GridBagLayout());
+        statusPanel = new JPanel();
         userId = 1;
 
         keyNames = ActivityHandler.getUniqueKeys();
@@ -51,15 +54,20 @@ public class App {
 
         table = new ActivityTable(fields, userId);
 
+
         layoutConstraints = new GridBagConstraints();
-        layoutConstraints.fill = GridBagConstraints.BOTH;
+        layoutConstraints.fill = GridBagConstraints.HORIZONTAL;
+        layoutConstraints.anchor = GridBagConstraints.NORTH;
         layoutConstraints.gridheight = (keyNames.length*2) + 1;
         layoutConstraints.gridx = 0;
         layoutConstraints.gridy = 0;
-        layoutConstraints.weightx = 0.6;
+        layoutConstraints.weightx = 1;
+        layoutConstraints.weighty = 1;
         layoutConstraints.insets = new Insets(10,10,10,0);
 
-        mainPanel.add(new JScrollPane(table), layoutConstraints);
+        mainPanel.add(new JScrollPane(table), BorderLayout.CENTER);
+        mainPanel.add(toolBarPanel, BorderLayout.LINE_END);
+        mainPanel.add(statusPanel, BorderLayout.SOUTH);
         mainPanel.setOpaque(true);
 
     }
@@ -72,6 +80,19 @@ public class App {
         } catch (SecurityException e) {
             /* probably running via webstart, do nothing */
         }
+        UserTableModel userModel = new UserTableModel();
+        ActivityTableModel activityModel = new ActivityTableModel();
+
+        try {
+            userModel.createTables();
+            activityModel.createTables();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            userModel.disconnectFromDatabase();
+            activityModel.disconnectFromDatabase();
+        }
+
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowGUI();
@@ -86,14 +107,14 @@ public class App {
         layoutConstraints.insets = new Insets(5,15,0,10);
         layoutConstraints.gridy = row;
 
-        mainPanel.add(labels[index], layoutConstraints);
+        toolBarPanel.add(labels[index], layoutConstraints);
 
         row += 1;
 
         layoutConstraints.insets = new Insets(0,10,0,10);
         layoutConstraints.gridy = row;
 
-        mainPanel.add(fields[index], layoutConstraints);
+        toolBarPanel.add(fields[index], layoutConstraints);
 
         row += 1;
 
@@ -111,7 +132,7 @@ public class App {
         frame.setContentPane(ui.mainPanel);
 
         ui.layoutConstraints.fill = GridBagConstraints.HORIZONTAL;
-        ui.layoutConstraints.weightx = 0.4;
+        ui.layoutConstraints.weighty = 0;
         ui.layoutConstraints.gridx = 1;
         ui.layoutConstraints.gridheight = 1;
         ui.layoutConstraints.ipady = 10;
@@ -170,8 +191,16 @@ public class App {
         ui.layoutConstraints.insets = new Insets(25,10,10,10);
         ui.layoutConstraints.gridy = fieldRow;
         ui.layoutConstraints.ipady = 20;
+        ui.layoutConstraints.weighty = 1;
 
-        ui.mainPanel.add(sub, ui.layoutConstraints);
+        ui.toolBarPanel.add(sub, ui.layoutConstraints);
+
+
+        ui.statusPanel.setPreferredSize(new Dimension(frame.getWidth(), 40));
+        ui.statusPanel.setLayout(new BoxLayout(ui.statusPanel, BoxLayout.X_AXIS));
+        JLabel statusLabel = new JLabel("status");
+        statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        ui.statusPanel.add(statusLabel);
 
         frame.pack();
         frame.setVisible(true);

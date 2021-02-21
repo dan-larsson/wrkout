@@ -12,8 +12,6 @@ import java.util.stream.Stream;
 public class ContinualActivity extends BaseActivity implements Comparable {
     // Length in km
     protected int length;
-    // Time in min
-    protected int time;
 
     public ContinualActivity(String name, Date date, int length, int time) {
         super(name, date);
@@ -104,22 +102,11 @@ public class ContinualActivity extends BaseActivity implements Comparable {
     }
 
     @Override
-    public void prompt(BufferedReader input, HashMap<String, String> defaults) {
-        super.prompt(input, defaults);
-        promptForLength(input, defaults);
-        promptForTime(input, defaults);
-    }
-
-    private void promptForLength(BufferedReader input, HashMap<String, String> defaults) {
-        this.length = promptForInt(input,getLabel("length")+"[km]", defaults.get("length"));
-    }
-
-    private void promptForTime(BufferedReader input, HashMap<String, String> defaults) {
-        this.time = promptForInt(input,getLabel("time")+"[min]", defaults.get("time"));
-    }
-
-    @Override
     public int compareTo(Object o) {
         return getDate().compareTo(((BaseActivity)o).getDate());
+    }
+
+    protected double getPowerConsumption() {
+        return 13.5;
     }
 }

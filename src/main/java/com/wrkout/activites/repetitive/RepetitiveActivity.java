@@ -14,16 +14,18 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
     protected int sets;
     protected int reps;
     protected int weight;
+    protected int time;
 
-    public RepetitiveActivity(String name, Date date, int reps, int sets, int weight) {
+    public RepetitiveActivity(String name, Date date, int reps, int sets, int weight, int time) {
         super(name, date);
         this.reps = reps;
         this.sets = sets;
         this.weight = weight;
+        this.time = time;
     }
 
     public RepetitiveActivity(String name, Date date) {
-        this(name, date, 0, 0, 0);
+        this(name, date, 0, 0, 0, 0);
     }
 
     public int getReps() {
@@ -38,6 +40,9 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
         return weight;
     }
 
+    public int getTime() {
+        return time;
+    }
 
     @Override
     public String[] getKeys() {
@@ -48,7 +53,7 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
     public String[] getKeys(boolean includeHidden) {
         return Stream.concat(
                 Arrays.stream(super.getKeys(includeHidden)),
-                Arrays.stream(new String[]{"sets", "reps", "weight"})
+                Arrays.stream(new String[]{"sets", "reps", "weight", "time"})
         ).toArray(String[]::new);
     }
 
@@ -64,6 +69,9 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
             case "weight":
                 this.weight = Integer.parseInt(value);
                 return true;
+            case "time":
+                this.time = Integer.parseInt(value);
+                return true;
             default:
                 return super.set(key, value);
         }
@@ -78,6 +86,8 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
                 return String.valueOf(reps);
             case "weight":
                 return String.valueOf(weight);
+            case "time":
+                return String.valueOf(time);
             default:
                 return super.get(key);
         }
@@ -90,6 +100,7 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
             case "reps": return "Reps";
             case "weight": return "Vikt";
             case "total": return "Totalt";
+            case "time": return "Tid";
             default:
                 return super.getLabel(key);
         }
@@ -102,6 +113,7 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
         dict.put("sets", String.valueOf(sets));
         dict.put("reps", String.valueOf(reps));
         dict.put("weight", String.valueOf(weight));
+        dict.put("tid", String.valueOf(time));
         dict.put("total", String.valueOf(sets*reps*weight));
 
         return dict;
@@ -115,32 +127,17 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
         sb.append(", reps=").append(reps);
         sb.append(", sets=").append(sets);
         sb.append(", weight=").append(weight);
+        sb.append(", time=").append(time);
         sb.append('}');
         return sb.toString();
     }
 
     @Override
-    public void prompt(BufferedReader input, HashMap<String, String> defaults) {
-        super.prompt(input, defaults);
-        promptForWeight(input, defaults);
-        promptForSets(input, defaults);
-        promptForReps(input, defaults);
-    }
-
-    private void promptForSets(BufferedReader input, HashMap<String, String> defaults) {
-        this.sets = promptForInt(input,getLabel("sets")+"[nr]", defaults.get("sets"));
-    }
-
-    private void promptForWeight(BufferedReader input, HashMap<String, String> defaults) {
-        this.weight = promptForInt(input,getLabel("weight")+"[kg]", defaults.get("weight"));
-    }
-
-    private void promptForReps(BufferedReader input, HashMap<String, String> defaults) {
-        this.reps = promptForInt(input,getLabel("reps")+"[nr]", defaults.get("reps"));
-    }
-
-    @Override
     public int compareTo(Object o) {
         return getDate().compareTo(((BaseActivity)o).getDate());
+    }
+
+    protected double getPowerConsumption() {
+        return 6.5;
     }
 }

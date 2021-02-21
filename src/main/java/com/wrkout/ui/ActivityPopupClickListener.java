@@ -6,10 +6,10 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class PopupClickListener extends MouseAdapter {
+public class ActivityPopupClickListener extends MouseAdapter {
     private ActivityTable table;
 
-    public PopupClickListener(ActivityTable table) {
+    public ActivityPopupClickListener(ActivityTable table) {
         this.table = table;
     }
 
@@ -30,7 +30,7 @@ public class PopupClickListener extends MouseAdapter {
     }
 
     private void show(MouseEvent e, int column, int row, BaseActivity current) {
-        PopupMenu menu = new PopupMenu(this.table, column, row, current);
+        ActivityPopupMenu menu = new ActivityPopupMenu(this.table, column, row, current);
         menu.show(e.getComponent(), e.getX(), e.getY());
     }
 }

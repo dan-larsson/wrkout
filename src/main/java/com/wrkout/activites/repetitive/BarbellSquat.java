@@ -6,12 +6,12 @@ public class BarbellSquat extends RepetitiveActivity {
 
     public static final String NAME = "Knäböj";
 
-    public BarbellSquat(int reps, int sets, int weight, Date date) {
-        super(BarbellSquat.NAME, date, reps, sets, weight);
+    public BarbellSquat(int reps, int sets, int weight, Date date, int time) {
+        super(BarbellSquat.NAME, date, reps, sets, weight, time);
     }
 
-    public BarbellSquat(int reps, int sets, int weight) {
-        super(BarbellSquat.NAME, new Date(), reps, sets, weight);
+    public BarbellSquat(int reps, int sets, int weight, int time) {
+        super(BarbellSquat.NAME, new Date(), reps, sets, weight, time);
     }
 
     public BarbellSquat() {
