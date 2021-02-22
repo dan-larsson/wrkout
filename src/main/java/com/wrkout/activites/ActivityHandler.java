@@ -1,163 +1,74 @@
 package com.wrkout.activites;
 
+import com.wrkout.SQLite;
 import com.wrkout.activites.continual.Running;
 import com.wrkout.activites.repetitive.*;
-import com.wrkout.storage.CsvHandler;
-import com.wrkout.storage.SQLiteHandler;
-import com.wrkout.storage.StorageHandler;
 
+import java.sql.*;
 import java.util.*;
 
-public class ActivityHandler {
-
-    private final ArrayList<BaseActivity> activityList;
-    private final StorageHandler storageHandler;
-
-    public ActivityHandler(StorageHandler storageHandler) {
-        this.storageHandler = storageHandler;
-        activityList = new ArrayList<>();
-    }
+public class ActivityHandler extends SQLite {
 
     public ActivityHandler() {
-        this(new SQLiteHandler());
+        connect();
     }
 
-    /**
-     * Appends the specified activity to the end of this list.
-     * @param activity activity
-     */
-    public void add(BaseActivity activity) {
-        activityList.add(activity);
-    }
+    public ArrayList<BaseActivity> getActivities() throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
 
-    /**
-     * Returns the activity at the specified position in this list.
-     * @param index position.
-     * @return activity at the specified position.
-     */
-    public BaseActivity get(int index) {
-        try {
-            return activityList.get(index);
-        } catch (IndexOutOfBoundsException e) {
-            return null;
-        }
-    }
-
-    public void print() {
-        String[] keys = new String[32];
-        int[] maxLengths = new int[32];
-        int currentKeyNum = 1;
-        String[][] table;
-        int colIndex;
+        ArrayList<BaseActivity> activityList = new ArrayList<>();
+        BaseActivity instance;
         boolean first = true;
-        String fmt;
-        StringBuilder str = new StringBuilder();
-        StringBuilder hr = new StringBuilder();
-        Formatter fm = new Formatter(str);
+        StringBuilder sql = new StringBuilder("SELECT ");
+        String[] keys = getUniqueKeys(true);
+        String frmt;
 
-        // Add first special column #
-        keys[0] = "#";
-        maxLengths[0] = 5;
-        fmt = "| %-" + (maxLengths[0]+1) + "s";
-        fm.format(fmt, keys[0]);
-        str.append("|");
+        for (String key : keys) {
+            if (key.equals("username")) {
+                frmt = "users.name as username";
+            } else if (key.equals("userweight")) {
+                frmt = "users.weight as userweight";
+            } else {
+                frmt = "activities.%s";
+            }
 
-        // Construct the rest of the header
-        for (BaseActivity inst : activityList) {
-            Map<String, String> row = inst.getMap();
-            for (Map.Entry<String, String> entry : row.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                if (value.length() > 5) {
-                    maxLengths[currentKeyNum] = 25;
-                } else {
-                    maxLengths[currentKeyNum] = 10;
-                }
-                if (!Arrays.asList(keys).contains(key)) {
-                    keys[currentKeyNum] = key;
-                    currentKeyNum += 1;
-                    if (first) {
-                        first = false;
-                    } else {
-                        str.append(" |");
+            if (first) {
+                sql.append(String.format(frmt, key));
+                first = false;
+            } else {
+                sql.append(",");
+                sql.append(String.format(frmt, key));
+            }
+        }
+        sql.append(" FROM activities");
+        sql.append(" INNER JOIN users ON activities.user_id = users.id");
+        sql.append(" ORDER BY activities.date;");
+
+        ResultSet resultSet = statement.executeQuery(sql.toString());
+
+        while (resultSet.next()) {
+            String name = resultSet.getString("name");
+            String value;
+            String key;
+
+            instance = ActivityHandler.newActivity(name);
+            if (instance != null) {
+                int i;
+                for (i = 0; i < keys.length; i++) {
+                    value = resultSet.getString(i+1);
+                    key = keys[i];
+                    if (value != null) {
+                        instance.set(key, value);
                     }
-                    fmt = " %-" + maxLengths[currentKeyNum - 1] + "s";
-                    fm.format(fmt, inst.getLabel(key));
                 }
-            }
-        }
-        str.append(" |\n");
-
-        // construct the horizontal ruler
-        for (int i = 0; i < currentKeyNum; i++) {
-            hr.append("+");
-            hr.append("-".repeat(maxLengths[i]+2));
-        }
-        hr.append("+\n");
-
-        // print the header
-        System.out.print(hr.toString());
-        System.out.print(str.toString());
-        System.out.print(hr.toString());
-
-        // put all values in the correct bucket
-        table = new String[activityList.size()][currentKeyNum];
-        for (int i=0; i < activityList.size() ;i++) {
-            table[i][0] = String.valueOf(i+1);
-            Map<String, String> row = activityList.get(i).getMap();
-            for (Map.Entry<String, String> entry: row.entrySet()) {
-                colIndex = Arrays.asList(keys).indexOf(entry.getKey());
-                table[i][colIndex] = entry.getValue();
+                activityList.add(instance);
             }
         }
 
-        // print the rows
-        for (String[] strings : table) {
-            for (int j = 0; j < strings.length; j++) {
-                fmt = "| %-" + (maxLengths[j] + 1) + "s";
-                if (strings[j] == null) {
-                    System.out.printf(fmt, "-");
-                } else {
-                    System.out.printf(fmt, strings[j]);
-                }
-            }
-            System.out.print("|\n");
-        }
-
-        // finish of with a ruler
-        System.out.print(hr.toString());
-
+        return activityList;
     }
 
-    /**
-     * Read activities from storage.
-     */
-    public void read() {
-        storageHandler.read(activityList);
-    }
-
-    /**
-     * Write activities to storage.
-     */
-    public void write() {
-        storageHandler.write(activityList);
-    }
-
-    public void addActivity(BaseActivity activity, int user_id) {
-        storageHandler.addActivity(activity, user_id);
-    }
-
-    public String[] getColumnNames() {
-        return getUniqueLabels();
-    }
-
-    public String[] getColumnKeys() {
-        return getUniqueKeys();
-    }
-
-    public String[][] getRows(int user_id) {
-        return storageHandler.getRows(user_id);
-    }
 
     /**
      * Return an array of activity names.
@@ -255,4 +166,63 @@ public class ActivityHandler {
         }
     }
 
+    public void createTables() throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        statement.executeUpdate(getCreateSQL());
+    }
+
+    public void createActivity(BaseActivity activity, int user_id) throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        StringBuilder sql = new StringBuilder("INSERT INTO activities (user_id");
+        String[] keys = activity.getKeys();
+
+        for (String key : keys) {
+            sql.append(",");
+            sql.append(key);
+        }
+        sql.append(") VALUES (");
+        sql.append(user_id);
+
+        for (String key : keys) {
+            sql.append(String.format(",'%s'", activity.get(key)));
+        }
+        sql.append(");");
+
+        statement.executeUpdate(sql.toString());
+    }
+
+    public void createActivity(Object[] row, int user_id) throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        StringBuilder sql = new StringBuilder("INSERT INTO activities (user_id");
+        String[] keys = ActivityHandler.getUniqueKeys();
+        boolean isFirst = true;
+
+        for (String key : keys) {
+            sql.append(",");
+            sql.append(key);
+        }
+        sql.append(") VALUES (");
+        sql.append(user_id);
+
+        for (Object key : row) {
+            sql.append(String.format(",'%s'", key));
+        }
+        sql.append(");");
+
+        statement.executeUpdate(sql.toString());
+    }
+
+    public void deleteActivity(int rowNum, int activityId) throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        String sql = String.format("DELETE FROM activities WHERE id = %d", activityId);
+        statement.executeUpdate(sql);
+    }
 }

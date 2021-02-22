@@ -14,7 +14,6 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
     protected int sets;
     protected int reps;
     protected int weight;
-    protected int time;
 
     public RepetitiveActivity(String name, Date date, int reps, int sets, int weight, int time) {
         super(name, date);
@@ -69,9 +68,6 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
             case "weight":
                 this.weight = Integer.parseInt(value);
                 return true;
-            case "time":
-                this.time = Integer.parseInt(value);
-                return true;
             default:
                 return super.set(key, value);
         }
@@ -86,8 +82,6 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
                 return String.valueOf(reps);
             case "weight":
                 return String.valueOf(weight);
-            case "time":
-                return String.valueOf(time);
             default:
                 return super.get(key);
         }
@@ -100,7 +94,6 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
             case "reps": return "Reps";
             case "weight": return "Vikt";
             case "total": return "Totalt";
-            case "time": return "Tid";
             default:
                 return super.getLabel(key);
         }

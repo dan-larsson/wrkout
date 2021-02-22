@@ -6,6 +6,8 @@ public class User {
     private int weight;
     private int length;
 
+    public static final int KCAL_PER_KG = 33;
+
     public User(int id, String name, int weight, int length) {
         this.id = id;
         this.name = name;
@@ -87,20 +89,6 @@ public class User {
         }
     }
 
-    public static String getCreateSQL() {
-        StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS users (");
-        for (String key : getKeys()) {
-            sql.append(String.format("%s CHAR(32), ", key));
-        }
-        sql.append("id INTEGER PRIMARY KEY AUTOINCREMENT);");
-
-        return sql.toString();
-    }
-
-    public static String getFirstUserSQL() {
-        return "INSERT INTO users (name, weight) VALUES ('Dan', '76');";
-    }
-
     public int getId() {
         return id;
     }
@@ -115,5 +103,9 @@ public class User {
 
     public int getLength() {
         return length;
+    }
+
+    public int getKcal() {
+        return this.length * KCAL_PER_KG;
     }
 }

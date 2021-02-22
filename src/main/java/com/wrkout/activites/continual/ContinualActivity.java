@@ -47,9 +47,6 @@ public class ContinualActivity extends BaseActivity implements Comparable {
             case "length":
                 this.length = Integer.parseInt(value);
                 return true;
-            case "time":
-                this.time = Integer.parseInt(value);
-                return true;
             default:
                 return super.set(key, value);
         }
@@ -60,8 +57,6 @@ public class ContinualActivity extends BaseActivity implements Comparable {
         switch (key) {
             case "length":
                 return String.valueOf(length);
-            case "time":
-                return String.valueOf(time);
             default:
                 return super.get(key);
         }
@@ -71,7 +66,6 @@ public class ContinualActivity extends BaseActivity implements Comparable {
     public String getLabel(String key) {
         switch (key) {
             case "length": return "Sträcka";
-            case "time": return "Tid";
             default:
                 return super.getLabel(key);
         }
@@ -83,7 +77,6 @@ public class ContinualActivity extends BaseActivity implements Comparable {
         sb.append("date=").append(date);
         sb.append(", name='").append(name).append("'");
         sb.append(", length=").append(length);
-        sb.append(", time=").append(time);
         sb.append('}');
         return sb.toString();
     }

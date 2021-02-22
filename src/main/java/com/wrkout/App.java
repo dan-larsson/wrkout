@@ -4,7 +4,9 @@ import com.wrkout.activites.ActivityHandler;
 import com.wrkout.activites.BaseActivity;
 import com.wrkout.ui.ActivityTable;
 import com.wrkout.ui.ActivityTableModel;
+import com.wrkout.ui.UserTable;
 import com.wrkout.ui.UserTableModel;
+import com.wrkout.user.UserHandler;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,13 +19,17 @@ import static javax.swing.UIManager.getSystemLookAndFeelClassName;
 public class App {
 
     private JPanel mainPanel;
+    private JPanel settingsPanel;
     private JPanel toolBarPanel;
+    private JPanel topPanel;
     private JPanel statusPanel;
+    private JTabbedPane tabbedPane;
     private String[] columnNames;
     private String[] keyNames;
     private JLabel[] labels;
     private JComponent[] fields;
     private ActivityTable table;
+    private UserTable userTable;
     private GridBagConstraints layoutConstraints;
 
     private int userId;
@@ -31,6 +37,7 @@ public class App {
     public App() {
         try {
             UIManager.setLookAndFeel(getSystemLookAndFeelClassName());
+
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
@@ -41,10 +48,16 @@ public class App {
             e.printStackTrace();
         }
 
+        tabbedPane = new JTabbedPane();
+
         mainPanel = new JPanel(new BorderLayout());
         toolBarPanel = new JPanel(new GridBagLayout());
         statusPanel = new JPanel();
+        topPanel = new JPanel();
+
         userId = 1;
+
+        settingsPanel = new JPanel(new BorderLayout());
 
         keyNames = ActivityHandler.getUniqueKeys();
         columnNames = ActivityHandler.getUniqueLabels();
@@ -53,6 +66,7 @@ public class App {
         fields = new JComponent[keyNames.length];
 
         table = new ActivityTable(fields, userId);
+        userTable = new UserTable();
 
 
         layoutConstraints = new GridBagConstraints();
@@ -68,7 +82,13 @@ public class App {
         mainPanel.add(new JScrollPane(table), BorderLayout.CENTER);
         mainPanel.add(toolBarPanel, BorderLayout.LINE_END);
         mainPanel.add(statusPanel, BorderLayout.SOUTH);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
         mainPanel.setOpaque(true);
+
+        settingsPanel.add(new JScrollPane(userTable), BorderLayout.CENTER);
+
+        tabbedPane.addTab("Aktiviteter", mainPanel);
+        tabbedPane.addTab("Användare", settingsPanel);
 
     }
 
@@ -80,17 +100,17 @@ public class App {
         } catch (SecurityException e) {
             /* probably running via webstart, do nothing */
         }
-        UserTableModel userModel = new UserTableModel();
-        ActivityTableModel activityModel = new ActivityTableModel();
+        UserHandler userHandler = new UserHandler();
+        ActivityHandler activityHandler = new ActivityHandler();
 
         try {
-            userModel.createTables();
-            activityModel.createTables();
+            userHandler.createTables();
+            activityHandler.createTables();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            userModel.disconnectFromDatabase();
-            activityModel.disconnectFromDatabase();
+            userHandler.disconnect();
+            activityHandler.disconnect();
         }
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -129,7 +149,7 @@ public class App {
         frame.setJMenuBar(menuBar);
 
         App ui = new App();
-        frame.setContentPane(ui.mainPanel);
+        frame.setContentPane(ui.tabbedPane);
 
         ui.layoutConstraints.fill = GridBagConstraints.HORIZONTAL;
         ui.layoutConstraints.weighty = 0;
@@ -195,6 +215,11 @@ public class App {
 
         ui.toolBarPanel.add(sub, ui.layoutConstraints);
 
+        ui.topPanel.setPreferredSize(new Dimension(frame.getWidth(), 40));
+        ui.topPanel.setLayout(new BoxLayout(ui.topPanel, BoxLayout.X_AXIS));
+        JLabel nameLabel = new JLabel("Dan");
+        nameLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        ui.topPanel.add(nameLabel);
 
         ui.statusPanel.setPreferredSize(new Dimension(frame.getWidth(), 40));
         ui.statusPanel.setLayout(new BoxLayout(ui.statusPanel, BoxLayout.X_AXIS));

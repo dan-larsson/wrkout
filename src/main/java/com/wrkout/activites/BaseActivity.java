@@ -96,6 +96,9 @@ public abstract class BaseActivity implements Comparable {
             case "name":
                 this.name = value;
                 return true;
+            case "time":
+                this.time = Integer.parseInt(value);
+                return true;
             case "id":
                 this.id = Integer.parseInt(value);
                 return true;
@@ -114,6 +117,7 @@ public abstract class BaseActivity implements Comparable {
         switch (key) {
             case "date": return "Datum";
             case "name": return "Aktivitet";
+            case "time": return "Tid";
             default: return null;
         }
     }
@@ -163,20 +167,16 @@ public abstract class BaseActivity implements Comparable {
 
     protected abstract Map<String, String> prepare();
 
-   public double getKCAL() {
+    public int getKCAL() {
         try {
             double powerConsumption = getPowerConsumption();
             double hours = getTime() / 60.0;
-            System.out.printf("powerConsumption = %f\n", powerConsumption);
-            System.out.printf("time = %d\n", getTime());
-            System.out.printf("hours = %f\n", hours);
-            System.out.printf("weight = %d\n", userweight);
 
-            return (powerConsumption * hours * userweight);
+            return (int)(powerConsumption * hours * userweight);
         } catch (Exception e) {
             e.printStackTrace();
-            return 0.0;
+            return 0;
         }
-     }
+    }
 
 }
