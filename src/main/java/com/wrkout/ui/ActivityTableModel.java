@@ -15,39 +15,23 @@ public class ActivityTableModel extends AbstractTableModel {
     private ActivityHandler activityHandler;
 
     public ActivityTableModel() {
-        this(false);
-    }
-
-    public ActivityTableModel(boolean setQuery) {
         columnNames = ActivityHandler.getUniqueLabels();
         columnKeys = ActivityHandler.getUniqueKeys();
 
         activityList = new ArrayList<>();
         activityHandler = new ActivityHandler();
-
-        if (setQuery) {
-            this.loadActivities();
-        }
     }
 
     public Class getColumnClass(int column) {
-        if (column == 0) {
-            return Integer.class;
-        }
         return String.class;
     }
 
     public int getColumnCount() {
-        return columnNames.length + 2;
+        return columnNames.length;
     }
 
     public String getColumnName(int column) {
-        if (column == 0) {
-            return "";
-        } else if (column == columnNames.length + 1) {
-            return "kcal";
-        }
-        return columnNames[column - 1];
+        return columnNames[column];
     }
 
     public int getRowCount() {
@@ -56,21 +40,16 @@ public class ActivityTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int row, int column) {
-        if (column == 0) {
-            return row + 1;
-        } else if (column == columnNames.length + 1) {
-            return activityList.get(row).getKCAL();
-        }
-        return activityList.get(row).get(columnKeys[column - 1]);
+        return activityList.get(row).get(columnKeys[column]);
     }
 
     public BaseActivity getActivity(int row) {
         return activityList.get(row);
     }
 
-    public void loadActivities() {
+    public void loadActivities(String dateString) {
         try {
-            activityList = activityHandler.getActivities();
+            activityList = activityHandler.getActivities(dateString);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(0);
@@ -109,5 +88,4 @@ public class ActivityTableModel extends AbstractTableModel {
             e.printStackTrace();
         }
     }
-
 }

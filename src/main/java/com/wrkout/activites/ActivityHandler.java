@@ -13,7 +13,83 @@ public class ActivityHandler extends SQLite {
         connect();
     }
 
+    public ArrayList<BaseActivity> getActivitiesGroupedByDay() throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        ArrayList<BaseActivity> activityList = new ArrayList<>();
+        BaseActivity instance;
+        boolean first = true;
+        StringBuilder sql = new StringBuilder("SELECT ");
+        String[] keys = getUniqueKeys(true);
+        String frmt;
+
+        for (String key : keys) {
+            switch (key) {
+                case "username":
+                    frmt = "users.name as username";
+                    break;
+                case "userweight":
+                    frmt = "users.weight as userweight";
+                    break;
+                case "sets":
+                case "reps":
+                case "weight":
+                case "time":
+                    //frmt = "SUM(CAST('activities.%1$s' AS INTEGER)) AS %1$s";
+                    frmt = "SUM(activities.%s)";
+                    break;
+                default:
+                    frmt = "activities.%s";
+                    break;
+            }
+
+            if (first) {
+                sql.append(String.format(frmt, key));
+                first = false;
+            } else {
+                sql.append(",");
+                sql.append(String.format(frmt, key));
+            }
+        }
+        sql.append(" FROM activities");
+        sql.append(" INNER JOIN users ON activities.user_id = users.id");
+        sql.append(" GROUP BY activities.date ORDER BY activities.date;");
+
+        System.out.println(sql.toString());
+
+        ResultSet resultSet = statement.executeQuery(sql.toString());
+
+        while (resultSet.next()) {
+            String name = resultSet.getString("name");
+            String value;
+            String key;
+
+
+            instance = ActivityHandler.newActivity(name);
+            if (instance != null) {
+                int i;
+                for (i = 0; i < keys.length; i++) {
+                    value = resultSet.getString(i+1);
+                    key = keys[i];
+                    if (value != null) {
+                        instance.set(key, value);
+
+                    }
+                }
+                activityList.add(instance);
+            }
+        }
+
+        return activityList;
+
+    }
+
     public ArrayList<BaseActivity> getActivities() throws IllegalStateException, SQLException {
+        return getActivities("");
+    }
+
+    public ArrayList<BaseActivity> getActivities(String dateString) throws IllegalStateException, SQLException {
         if (!connectedToDatabase)
             throw new IllegalStateException("Not Connected to Database");
 
@@ -43,7 +119,12 @@ public class ActivityHandler extends SQLite {
         }
         sql.append(" FROM activities");
         sql.append(" INNER JOIN users ON activities.user_id = users.id");
+        if (dateString.length() > 0) {
+            sql.append(String.format(" WHERE activities.date = '%s'", dateString));
+        }
         sql.append(" ORDER BY activities.date;");
+
+        System.out.println(sql.toString());
 
         ResultSet resultSet = statement.executeQuery(sql.toString());
 
@@ -133,6 +214,31 @@ public class ActivityHandler extends SQLite {
         return uniqueLabels.toArray(new String[0]);
     }
 
+    public static String[] getLabelsFor(String[] include) {
+        String[] all = oneOfEach();
+        String label;
+        List<String> labels = new ArrayList<>();
+        List<String> keys = new ArrayList<>();
+        BaseActivity current;
+
+        for (String inc : include) {
+            for (String objName : all) {
+                if (keys.contains(objName)) continue;
+
+                current = newActivity(objName);
+                label = current.getLabel(inc);
+
+                if (label != null) {
+                    keys.add(objName);
+                    labels.add(label);
+                    break;
+                }
+            }
+        }
+
+        return labels.toArray(new String[0]);
+    }
+
     public static String getCreateSQL() {
         StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS activities (");
         for (String key : getUniqueKeys()) {
@@ -195,13 +301,54 @@ public class ActivityHandler extends SQLite {
         statement.executeUpdate(sql.toString());
     }
 
+    public void deleteActivities(int user_id, String dateString) throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        StringBuilder sql = new StringBuilder("DELETE FROM activities WHERE user_id = ");
+        sql.append(user_id);
+        sql.append(" AND date = \"").append(dateString).append("\";");
+
+        statement.executeUpdate(sql.toString());
+
+    }
+
+    public void copyActivities(int user_id, String oldDateString, String newDateString) throws IllegalStateException, SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        StringBuilder sql = new StringBuilder("INSERT INTO activities (user_id,date");
+        String[] keys = ActivityHandler.getUniqueKeys();
+
+        for (String key : keys) {
+            if (key.equals("date"))  {
+                continue;
+            }
+            sql.append(",");
+            sql.append(key);
+        }
+
+        sql.append(") SELECT user_id,\"").append(newDateString).append("\"");
+
+        for (String key : keys) {
+            if (key.equals("date"))  {
+                continue;
+            }
+            sql.append(",");
+            sql.append(key);
+        }
+
+        sql.append(" FROM activities WHERE date = \"").append(oldDateString).append("\"");
+        sql.append(" AND user_id = ").append(user_id).append(";");
+        statement.executeUpdate(sql.toString());
+    }
+
     public void createActivity(Object[] row, int user_id) throws IllegalStateException, SQLException {
         if (!connectedToDatabase)
             throw new IllegalStateException("Not Connected to Database");
 
         StringBuilder sql = new StringBuilder("INSERT INTO activities (user_id");
         String[] keys = ActivityHandler.getUniqueKeys();
-        boolean isFirst = true;
 
         for (String key : keys) {
             sql.append(",");

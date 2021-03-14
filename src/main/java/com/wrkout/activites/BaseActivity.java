@@ -1,7 +1,5 @@
 package com.wrkout.activites;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -70,6 +68,8 @@ public abstract class BaseActivity implements Comparable {
                 return username;
             case "userweight":
                 return String.valueOf(userweight);
+            case "kcal":
+                return String.valueOf(getKCAL());
             default:
                 return null;
         }
@@ -84,7 +84,6 @@ public abstract class BaseActivity implements Comparable {
         }
     }
     public boolean set(String key, String value) {
-        System.out.printf("Setting %s: %s\n", key, value);
         switch (key) {
             case "date":
                 try {
@@ -97,16 +96,28 @@ public abstract class BaseActivity implements Comparable {
                 this.name = value;
                 return true;
             case "time":
-                this.time = Integer.parseInt(value);
+                if (value.equals("")) {
+                    this.time = 0;
+                } else {
+                    this.time = Integer.parseInt(value);
+                }
                 return true;
             case "id":
-                this.id = Integer.parseInt(value);
+                if (value.equals("")) {
+                    this.id = 0;
+                } else {
+                    this.id = Integer.parseInt(value);
+                }
                 return true;
             case "username":
                 this.username = value;
                 return true;
             case "userweight":
-                this.userweight = Integer.parseInt(value);
+                if (value.equals("")) {
+                    this.userweight = 0;
+                } else {
+                    this.userweight = Integer.parseInt(value);
+                }
                 return true;
             default:
                 return false;
@@ -167,6 +178,14 @@ public abstract class BaseActivity implements Comparable {
 
     protected abstract Map<String, String> prepare();
 
+    /**
+     * Calculate the number of calories used for this activity.
+     *
+     * Formula:
+     * Power consumption (kcal/h per kg body weight) * h * body weight.
+     *
+     * @return Number of calories used for current activity.
+     */
     public int getKCAL() {
         try {
             double powerConsumption = getPowerConsumption();

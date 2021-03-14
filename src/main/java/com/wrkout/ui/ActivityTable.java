@@ -1,6 +1,8 @@
 package com.wrkout.ui;
 
+import com.wrkout.App;
 import com.wrkout.activites.BaseActivity;
+import com.wrkout.activites.Summary;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -11,18 +13,19 @@ import java.util.List;
 public class ActivityTable extends JTable {
 
     private int userId;
+    private App app;
     private ActivityTableSelectionListener tableListener;
 
-    public ActivityTable(JComponent[] fields, int userId) {
-        super(new ActivityTableModel(true));
+    public ActivityTable(App app, JComponent[] fields, int userId) {
+        super(new ActivityTableModel());
         this.userId = userId;
+        this.app = app;
 
         setPreferredScrollableViewportSize(new Dimension(800, 600));
 
         JTableHeader header = this.getTableHeader();
         header.setPreferredSize(new Dimension(100, 32));
 
-        getColumnModel().getColumn(0).setCellRenderer(new RowNumberRenderer());
         getColumnModel().getColumn(0).setPreferredWidth(5);
 
         setFillsViewportHeight(true);
@@ -44,6 +47,11 @@ public class ActivityTable extends JTable {
         setRowSorter(sorter);
 
         this.addMouseListener(new ActivityPopupClickListener(this));
+        this.addKeyListener(new ActivityTableKeyListener());
+    }
+
+    public void reload(String dateString) {
+        ((ActivityTableModel)this.dataModel).loadActivities(dateString);
     }
 
     public BaseActivity getActivity(int row) {
@@ -76,33 +84,24 @@ public class ActivityTable extends JTable {
         }
     }
 
-    public void setFields(JComponent[] fields) {
-        this.tableListener.setFields(fields);
+    public void deleteActivity() {
+        BaseActivity selected;
+        int selectedRow = getSelectedRow();
+        int convertedRow;
+
+        if (selectedRow == -1) {
+            // No row selected, do nothing
+            return;
+        }
+
+        convertedRow = convertRowIndexToModel(selectedRow);
+        selected = ((ActivityTableModel) getModel()).getActivity(convertedRow);
+        if (selected != null) {
+            ((ActivityTableModel)this.dataModel).removeRow(convertedRow, selected.getId());
+        }
     }
 
-    private static class RowNumberRenderer extends DefaultTableCellRenderer {
-        public RowNumberRenderer() {
-            setHorizontalAlignment(JLabel.CENTER);
-        }
-
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (table != null) {
-                JTableHeader header = table.getTableHeader();
-                if (header != null) {
-                    setForeground(header.getForeground());
-                    setBackground(header.getBackground());
-                    setFont(header.getFont());
-                }
-            }
-
-            if (isSelected) {
-                setFont(getFont().deriveFont(Font.BOLD));
-            }
-
-            setText((value == null) ? "" : value.toString());
-            setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-
-            return this;
-        }
+    public void setFields(JComponent[] fields) {
+        this.tableListener.setFields(fields);
     }
 }

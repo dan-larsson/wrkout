@@ -60,13 +60,25 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
     public boolean set(String key, String value) {
         switch (key) {
             case "sets":
-                this.sets = Integer.parseInt(value);
+                if (value.equals("")) {
+                    this.sets = 0;
+                } else {
+                    this.sets = Integer.parseInt(value);
+                }
                 return true;
             case "reps":
-                this.reps = Integer.parseInt(value);
+                if (value.equals("")) {
+                    this.reps = 0;
+                } else {
+                    this.reps = Integer.parseInt(value);
+                }
                 return true;
             case "weight":
-                this.weight = Integer.parseInt(value);
+                if (value.equals("")) {
+                    this.weight = 0;
+                } else {
+                    this.weight = Integer.parseInt(value);
+                }
                 return true;
             default:
                 return super.set(key, value);
@@ -82,9 +94,15 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
                 return String.valueOf(reps);
             case "weight":
                 return String.valueOf(weight);
+            case "total":
+                return String.valueOf(getTotal());
             default:
                 return super.get(key);
         }
+    }
+
+    public int getTotal() {
+        return sets * reps * weight;
     }
 
     @Override
@@ -123,6 +141,10 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
         sb.append(", time=").append(time);
         sb.append('}');
         return sb.toString();
+    }
+
+    public void blabla() {
+
     }
 
     @Override

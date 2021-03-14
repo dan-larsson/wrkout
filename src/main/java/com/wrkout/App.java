@@ -2,10 +2,7 @@ package com.wrkout;
 
 import com.wrkout.activites.ActivityHandler;
 import com.wrkout.activites.BaseActivity;
-import com.wrkout.ui.ActivityTable;
-import com.wrkout.ui.ActivityTableModel;
-import com.wrkout.ui.UserTable;
-import com.wrkout.ui.UserTableModel;
+import com.wrkout.ui.*;
 import com.wrkout.user.UserHandler;
 
 import javax.swing.*;
@@ -18,19 +15,26 @@ import static javax.swing.UIManager.getSystemLookAndFeelClassName;
 
 public class App {
 
-    private JPanel mainPanel;
+    final String SUMMARY_PANEL = "Summary Panel";
+    final String ACTIVITIES_PANEL = "Activities Panel";
+    final String SETTINGS_PANEL = "Settings Panel";
+
+    private JPanel cards;
+    private JPanel summaryPanel;
+    private JPanel activitiesPanel;
     private JPanel settingsPanel;
     private JPanel toolBarPanel;
     private JPanel topPanel;
     private JPanel statusPanel;
-    private JTabbedPane tabbedPane;
     private String[] columnNames;
     private String[] keyNames;
     private JLabel[] labels;
     private JComponent[] fields;
-    private ActivityTable table;
+    private ActivityTable activityTable;
     private UserTable userTable;
-    private GridBagConstraints layoutConstraints;
+    private SummaryTable summaryTable;
+    private CardLayout cardLayout;
+
 
     private int userId;
 
@@ -48,16 +52,9 @@ public class App {
             e.printStackTrace();
         }
 
-        tabbedPane = new JTabbedPane();
-
-        mainPanel = new JPanel(new BorderLayout());
-        toolBarPanel = new JPanel(new GridBagLayout());
-        statusPanel = new JPanel();
-        topPanel = new JPanel();
-
+        cardLayout = new CardLayout();
+        cards = new JPanel(cardLayout);
         userId = 1;
-
-        settingsPanel = new JPanel(new BorderLayout());
 
         keyNames = ActivityHandler.getUniqueKeys();
         columnNames = ActivityHandler.getUniqueLabels();
@@ -65,31 +62,126 @@ public class App {
         labels = new JLabel[keyNames.length];
         fields = new JComponent[keyNames.length];
 
-        table = new ActivityTable(fields, userId);
+        setupActivities();
+        setupSummary();
+
+        toolBarPanel = new JPanel(new GridBagLayout());
+        statusPanel = new JPanel();
+        topPanel = new JPanel();
+        settingsPanel = new JPanel(new BorderLayout());
+
+
         userTable = new UserTable();
 
+        cards.add(settingsPanel, SETTINGS_PANEL);
+    }
 
-        layoutConstraints = new GridBagConstraints();
-        layoutConstraints.fill = GridBagConstraints.HORIZONTAL;
-        layoutConstraints.anchor = GridBagConstraints.NORTH;
-        layoutConstraints.gridheight = (keyNames.length*2) + 1;
-        layoutConstraints.gridx = 0;
-        layoutConstraints.gridy = 0;
-        layoutConstraints.weightx = 1;
-        layoutConstraints.weighty = 1;
-        layoutConstraints.insets = new Insets(10,10,10,0);
+    public String[] getKeyNames() {
+        return keyNames;
+    }
 
-        mainPanel.add(new JScrollPane(table), BorderLayout.CENTER);
-        mainPanel.add(toolBarPanel, BorderLayout.LINE_END);
-        mainPanel.add(statusPanel, BorderLayout.SOUTH);
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-        mainPanel.setOpaque(true);
+    public void submitActivity() {
+        String[] keys = new String[fields.length];
+        String[] vals = new String[fields.length];
+        int index = 0;
+        BaseActivity instance = null;
+        String text = null;
 
-        settingsPanel.add(new JScrollPane(userTable), BorderLayout.CENTER);
+        for (JComponent obj : fields) {
+            String name = obj.getName();
+            switch (name) {
+                case "name":
+                    text = (String) ((JComboBox) obj).getSelectedItem();
+                    instance = ActivityHandler.newActivity(text);
+                default:
+                    if (obj instanceof JTextField) {
+                        text = ((JTextField) obj).getText();
+                    } else if (obj instanceof JComboBox) {
+                        text = (String) ((JComboBox) obj).getSelectedItem();
+                    }
 
-        tabbedPane.addTab("Aktiviteter", mainPanel);
-        tabbedPane.addTab("Användare", settingsPanel);
+                    keys[index] = name;
+                    vals[index] = text;
 
+                    index += 1;
+            }
+        }
+        if (instance != null) {
+            for (int i = 0; i < keys.length; i++) {
+                if (keys[i] != null && vals[i] != null && vals[i] != "") {
+                    instance.set(keys[i], vals[i]);
+                }
+            }
+            activityTable.addActivity(instance, userId);
+        }
+        summaryTable.reload();
+    }
+
+    private void setupSummary() {
+        summaryTable = new SummaryTable(this, userId);
+        summaryPanel = new JPanel(new BorderLayout());
+
+        JPanel southPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 8));
+        southPanel.add(Box.createHorizontalStrut(15));
+
+        for (int i = 0; i < keyNames.length; i++) {
+            fields[i] = newField(keyNames[i]);
+            labels[i] = newLabelFor(fields[i], keyNames[i], columnNames[i]);
+            southPanel.add(labels[i]);
+            southPanel.add(fields[i]);
+            southPanel.add(Box.createHorizontalStrut(15));
+        }
+
+        activityTable.setFields(fields);
+
+        JButton sub = new JButton("Ny aktivitet");
+        sub.setFont(new Font("Arial", Font.PLAIN, 15));
+        sub.setSize(100, 40);
+        sub.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                submitActivity();
+            }
+        });
+
+        southPanel.add(sub);
+        southPanel.add(Box.createHorizontalStrut(15));
+
+        summaryPanel.add(new JScrollPane(summaryTable), BorderLayout.CENTER);
+        summaryPanel.add(southPanel, BorderLayout.SOUTH);
+        cards.add(summaryPanel, SUMMARY_PANEL);
+    }
+
+    private void setupActivities() {
+        activityTable = new ActivityTable(this, fields, userId);
+        activitiesPanel = new JPanel(new BorderLayout());
+
+        JPanel southPanel = new JPanel();
+
+        activitiesPanel.add(new JScrollPane(activityTable), BorderLayout.CENTER);
+
+        JButton back = new JButton("Tillbaka");
+        back.setFont(new Font("Arial", Font.PLAIN, 15));
+        back.setSize(100, 40);
+        back.addActionListener(new BackButtonListener(this));
+
+        southPanel.add(back);
+
+        activitiesPanel.add(southPanel, BorderLayout.SOUTH);
+        cards.add(activitiesPanel, ACTIVITIES_PANEL);
+    }
+
+    public void displayActivities(String dateString) {
+        activityTable.reload(dateString);
+        cardLayout.show(cards, ACTIVITIES_PANEL);
+    }
+
+    public void displaySummary() {
+        summaryTable.reload();
+        cardLayout.show(cards, SUMMARY_PANEL);
+    }
+
+    public void displaySettings() {
+        cardLayout.show(cards, SETTINGS_PANEL);
     }
 
     public static void main(String[] args) {
@@ -120,119 +212,47 @@ public class App {
         });
     }
 
-    private int addFieldGroup(int index, int row) {
-        fields[index] = newField(keyNames[index]);
-        labels[index] = newLabelFor(fields[index], columnNames[index]);
 
-        layoutConstraints.insets = new Insets(5,15,0,10);
-        layoutConstraints.gridy = row;
-
-        toolBarPanel.add(labels[index], layoutConstraints);
-
-        row += 1;
-
-        layoutConstraints.insets = new Insets(0,10,0,10);
-        layoutConstraints.gridy = row;
-
-        toolBarPanel.add(fields[index], layoutConstraints);
-
-        row += 1;
-
-        return row;
-    }
 
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("Workout");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setFocusable(true);
 
-        com.wrkout.ui.MenuBar menuBar = new com.wrkout.ui.MenuBar(frame);
-        frame.setJMenuBar(menuBar);
+        frame.setJMenuBar(new com.wrkout.ui.MenuBar(frame));
 
         App ui = new App();
-        frame.setContentPane(ui.tabbedPane);
+        frame.setContentPane(ui.cards);
 
-        ui.layoutConstraints.fill = GridBagConstraints.HORIZONTAL;
-        ui.layoutConstraints.weighty = 0;
-        ui.layoutConstraints.gridx = 1;
-        ui.layoutConstraints.gridheight = 1;
-        ui.layoutConstraints.ipady = 10;
-        ui.layoutConstraints.ipadx = 10;
 
-        int fieldRow = 0;
-        for (int i = 0; i < ui.keyNames.length; i++) {
-            fieldRow = ui.addFieldGroup(i, fieldRow);
-        }
-
-        ui.table.setFields(ui.fields);
-
-        JButton sub = new JButton("Spara");
-        sub.setFont(new Font("Arial", Font.PLAIN, 15));
-        sub.setSize(100, 40);
-        sub.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] keys = new String[ui.fields.length];
-                String[] vals = new String[ui.fields.length];
-                int index = 0;
-                BaseActivity instance = null;
-                String text = null;
-
-                for (JComponent obj : ui.fields) {
-                    String name = obj.getName();
-                    switch (name) {
-                        case "name":
-                            text = (String) ((JComboBox) obj).getSelectedItem();
-                            instance = ActivityHandler.newActivity(text);
-                        default:
-                            if (obj instanceof JTextField) {
-                                text = ((JTextField) obj).getText();
-                            } else if (obj instanceof JComboBox) {
-                                text = (String) ((JComboBox) obj).getSelectedItem();
-                            }
-
-                            keys[index] = name;
-                            vals[index] = text;
-
-                            index += 1;
-
-                    }
-                }
-                if (instance != null) {
-                    for (int i = 0; i < keys.length; i++) {
-                        if (keys[i] != null && vals[i] != null) {
-                            instance.set(keys[i], vals[i]);
-                        }
-                    }
-                    ui.table.addActivity(instance, ui.userId);
-                }
-            }
-        });
-
-        ui.layoutConstraints.insets = new Insets(25,10,10,10);
-        ui.layoutConstraints.gridy = fieldRow;
-        ui.layoutConstraints.ipady = 20;
-        ui.layoutConstraints.weighty = 1;
-
-        ui.toolBarPanel.add(sub, ui.layoutConstraints);
-
-        ui.topPanel.setPreferredSize(new Dimension(frame.getWidth(), 40));
-        ui.topPanel.setLayout(new BoxLayout(ui.topPanel, BoxLayout.X_AXIS));
-        JLabel nameLabel = new JLabel("Dan");
-        nameLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        ui.topPanel.add(nameLabel);
-
-        ui.statusPanel.setPreferredSize(new Dimension(frame.getWidth(), 40));
-        ui.statusPanel.setLayout(new BoxLayout(ui.statusPanel, BoxLayout.X_AXIS));
-        JLabel statusLabel = new JLabel("status");
-        statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        ui.statusPanel.add(statusLabel);
+        ui.displaySummary();
 
         frame.pack();
         frame.setVisible(true);
     }
 
-    private static JLabel newLabelFor(JComponent field, String text) {
-        JLabel lbl = new JLabel(text);
+    protected ImageIcon createImageIcon(String path, String description) {
+        java.net.URL imgURL = getClass().getClassLoader().getResource(path);
+        if (imgURL != null) {
+            ImageIcon imageIcon = new ImageIcon(imgURL, description);
+            Image image = imageIcon.getImage();
+            Image newimg = image.getScaledInstance(20, 20,  java.awt.Image.SCALE_SMOOTH);
+            return new ImageIcon(newimg);
+        } else {
+            System.err.println("Couldn't find file: " + path);
+            return null;
+        }
+    }
+
+    private JLabel newLabelFor(JComponent field, String key, String text) {
+        ImageIcon icon = createImageIcon(String.format("icons/%s.png", key), text);
+        JLabel lbl;
+        if (icon != null) {
+            lbl = new JLabel(icon, JLabel.LEFT);
+        } else {
+            lbl = new JLabel(text, JLabel.LEFT);
+        }
+
         lbl.setFont(new Font("Arial", Font.PLAIN, 12));
         lbl.setSize(100, 30);
         lbl.setLabelFor(field);
@@ -267,6 +287,7 @@ public class App {
         }
 
         field.setSize(300, 30);
+        field.setPreferredSize(new Dimension(100, 30));
         field.setName(fieldName);
         field.setFont(new Font("Arial", Font.PLAIN, 15));
         return field;
