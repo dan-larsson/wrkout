@@ -69,7 +69,11 @@ public class SummaryTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int row, int column) {
-        return summaryList.get(row).get(columnKeys[column]);
+        try {
+            return summaryList.get(row).get(columnKeys[column]);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public Summary getSummary(int row) {

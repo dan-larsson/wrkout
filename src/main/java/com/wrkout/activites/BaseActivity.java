@@ -6,8 +6,6 @@ import java.util.*;
 
 public abstract class BaseActivity implements Comparable {
 
-    public static final double xxx = 6.5;
-
     protected Date date;
     protected String name;
     protected int id;
@@ -33,18 +31,6 @@ public abstract class BaseActivity implements Comparable {
      */
     protected abstract double getPowerConsumption();
 
-    /**
-     * Return object as HashMap.
-     * @return object as hashmap.
-     */
-    public Map<String, String> getMap() {
-        Map<String, String> dict = prepare();
-
-        dict.put("date", dateFormat.format(date));
-        dict.put("name", String.valueOf(name));
-
-        return dict;
-    }
 
     public String[] getArray(String[] keys) {
         String[] obj = new String[keys.length];
@@ -83,6 +69,7 @@ public abstract class BaseActivity implements Comparable {
                 return null;
         }
     }
+
     public boolean set(String key, String value) {
         switch (key) {
             case "date":
@@ -92,9 +79,11 @@ public abstract class BaseActivity implements Comparable {
                     this.date = new Date();
                 }
                 return true;
+
             case "name":
                 this.name = value;
                 return true;
+
             case "time":
                 if (value.equals("")) {
                     this.time = 0;
@@ -102,6 +91,7 @@ public abstract class BaseActivity implements Comparable {
                     this.time = Integer.parseInt(value);
                 }
                 return true;
+
             case "id":
                 if (value.equals("")) {
                     this.id = 0;
@@ -109,9 +99,11 @@ public abstract class BaseActivity implements Comparable {
                     this.id = Integer.parseInt(value);
                 }
                 return true;
+
             case "username":
                 this.username = value;
                 return true;
+
             case "userweight":
                 if (value.equals("")) {
                     this.userweight = 0;
@@ -119,6 +111,7 @@ public abstract class BaseActivity implements Comparable {
                     this.userweight = Integer.parseInt(value);
                 }
                 return true;
+
             default:
                 return false;
         }
@@ -175,8 +168,6 @@ public abstract class BaseActivity implements Comparable {
     public int getTime() {
         return time;
     }
-
-    protected abstract Map<String, String> prepare();
 
     /**
      * Calculate the number of calories used for this activity.

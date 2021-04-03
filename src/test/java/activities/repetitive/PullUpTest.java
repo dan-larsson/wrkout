@@ -33,16 +33,6 @@ public class PullUpTest {
     }
 
     @Test
-    @DisplayName("Ensure correct values are returned by prepare function")
-    void testPrepare() {
-        Map<String, String> data = activity.getMap();
-        assertEquals("1", data.get("sets"), "Should return 1 set");
-        assertEquals("2", data.get("reps"), "Should return 2 reps");
-        assertEquals("3", data.get("weight"), "Should return 3 in weight");
-        assertEquals("4", data.get("time"), "Should return 4 in time");
-    }
-
-    @Test
     @DisplayName("Ensure we can set string values with set function")
     void testSet() {
         assertEquals(sets, activity.getSets(), "Should return sets set in construct");

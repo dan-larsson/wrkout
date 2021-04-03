@@ -125,7 +125,8 @@ public class App {
         southPanel.add(Box.createHorizontalStrut(15));
 
         for (int i = 0; i < keyNames.length; i++) {
-            fields[i] = newField(keyNames[i]);
+            //fields[i] = newField(keyNames[i]);
+            fields[i] = FieldFactory.createField(keyNames[i]);
             labels[i] = newLabelFor(fields[i], keyNames[i], columnNames[i]);
             southPanel.add(labels[i]);
             southPanel.add(fields[i]);
@@ -134,10 +135,7 @@ public class App {
 
         activityTable.setFields(fields);
 
-        JButton sub = new JButton("Ny aktivitet");
-        sub.setFont(new Font("Arial", Font.PLAIN, 15));
-        sub.setSize(100, 40);
-        sub.addActionListener(new ActionListener() {
+        JButton sub = ButtonFactory.createButton("Ny aktivitet", new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 submitActivity();
             }
@@ -159,12 +157,12 @@ public class App {
 
         activitiesPanel.add(new JScrollPane(activityTable), BorderLayout.CENTER);
 
-        JButton back = new JButton("Tillbaka");
-        back.setFont(new Font("Arial", Font.PLAIN, 15));
-        back.setSize(100, 40);
-        back.addActionListener(new BackButtonListener(this));
-
-        southPanel.add(back);
+        southPanel.add(
+                ButtonFactory.createButton(
+                        "Tillbaka",
+                        new BackButtonListener(this)
+                )
+        );
 
         activitiesPanel.add(southPanel, BorderLayout.SOUTH);
         cards.add(activitiesPanel, ACTIVITIES_PANEL);

@@ -14,17 +14,10 @@ public class UserHandler extends SQLite {
     }
 
     public void deleteUser(int userId) throws IllegalStateException, SQLException {
-        if (!connectedToDatabase)
-            throw new IllegalStateException("Not Connected to Database");
-
-        String sql = String.format("DELETE FROM users WHERE id = %d", userId);
-        statement.executeUpdate(sql);
+        executeUpdate(String.format("DELETE FROM users WHERE id = %d", userId));
     }
 
     public void addUser(User user) throws IllegalStateException, SQLException {
-        if (!connectedToDatabase)
-            throw new IllegalStateException("Not Connected to Database");
-
         boolean isFirst = true;
         StringBuilder sqlKeys = new StringBuilder("INSERT INTO users (");
         StringBuilder sqlVals = new StringBuilder(") VALUES (");
@@ -47,13 +40,10 @@ public class UserHandler extends SQLite {
         sql.append(sqlVals.toString());
         sql.append(");");
 
-        statement.executeUpdate(sql.toString());
+        executeUpdate(sql.toString());
     }
 
     public ArrayList<User> getUsers() throws IllegalStateException, SQLException {
-        if (!connectedToDatabase)
-            throw new IllegalStateException("Not Connected to Database");
-
         userList = new ArrayList<>();
 
         User instance;
@@ -72,7 +62,7 @@ public class UserHandler extends SQLite {
         sql.append(" FROM users");
         sql.append(" ORDER BY users.name;");
 
-        ResultSet resultSet = statement.executeQuery(sql.toString());
+        ResultSet resultSet = executeQuery(sql.toString());
 
         while (resultSet.next()) {
             instance = new User();
@@ -90,7 +80,7 @@ public class UserHandler extends SQLite {
 
     public static String getCreateSQL() {
         StringBuilder sql = new StringBuilder("CREATE TABLE IF NOT EXISTS users (");
-        for (String key : User.getKeys(true)) {
+        for (String key : User.getKeys()) {
             sql.append(String.format("%s CHAR(32), ", key));
         }
         sql.append("id INTEGER PRIMARY KEY AUTOINCREMENT);");
@@ -104,17 +94,14 @@ public class UserHandler extends SQLite {
 
 
     public void createTables() throws IllegalStateException {
-        if (!connectedToDatabase)
-            throw new IllegalStateException("Not Connected to Database");
-
         try {
-            statement.executeUpdate(getCreateSQL());
+            executeUpdate(getCreateSQL());
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(0);
         }
         try {
-            statement.executeUpdate(getFirstUserSQL());
+            executeUpdate(getFirstUserSQL());
         } catch (Exception e) {
             // pass
         }

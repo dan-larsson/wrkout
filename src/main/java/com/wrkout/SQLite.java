@@ -22,6 +22,22 @@ public class SQLite {
         }
     }
 
+    protected int executeUpdate(String sql) throws SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        System.out.println(sql);
+        return statement.executeUpdate(sql);
+    }
+
+    protected ResultSet executeQuery(String sql) throws SQLException {
+        if (!connectedToDatabase)
+            throw new IllegalStateException("Not Connected to Database");
+
+        System.out.println(sql);
+        return statement.executeQuery(sql);
+    }
+
     public void disconnect() {
         if (!connectedToDatabase)
             return;

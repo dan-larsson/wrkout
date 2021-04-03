@@ -2,7 +2,6 @@ package com.wrkout.ui;
 
 import com.wrkout.App;
 import com.wrkout.activites.BaseActivity;
-import com.wrkout.activites.Summary;
 
 import javax.swing.*;
 import javax.swing.table.*;

@@ -32,16 +32,6 @@ public class ContinualActivity extends BaseActivity implements Comparable {
     }
 
     @Override
-    protected Map<String, String> prepare() {
-        Map<String, String> dict = new HashMap<>();
-
-        dict.put("length", String.valueOf(length));
-        dict.put("time", String.valueOf(time));
-
-        return dict;
-    }
-
-    @Override
     public boolean set(String key, String value) {
         switch (key) {
             case "length":

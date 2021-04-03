@@ -118,19 +118,6 @@ public class RepetitiveActivity extends BaseActivity implements Comparable {
     }
 
     @Override
-    protected Map<String, String> prepare() {
-        Map<String, String> dict = new HashMap<>();
-
-        dict.put("sets", String.valueOf(sets));
-        dict.put("reps", String.valueOf(reps));
-        dict.put("weight", String.valueOf(weight));
-        dict.put("tid", String.valueOf(time));
-        dict.put("total", String.valueOf(sets*reps*weight));
-
-        return dict;
-    }
-
-    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("RepetitiveActivity{");
         sb.append("date=").append(date);
